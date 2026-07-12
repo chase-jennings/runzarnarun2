@@ -216,9 +216,47 @@ check('continue -> play', cont.state === 'play', `state=${cont.state}`);
 check('continue restores hearts to 3', cont.hearts === 3, `hearts=${cont.hearts}`);
 check('continue keeps score', cont.kept);
 
-/* reach family -> photo */
+/* ---- THE BOUNCER boss ---- */
+const bossStart = await page.evaluate(() => {
+  window.__dbg.resetRun(); window.__dbg.state = 'play';
+  const b = window.__dbg.boss;
+  return { exists: !!b, hp: b && b.hp, defeated: window.__dbg.bossDefeated };
+});
+check('boss exists with 15 hp', bossStart.exists && bossStart.hp === 15, `hp=${bossStart.hp}`);
+
+// Super Auntie contact must NOT kill the boss
+const bossImmune = await page.evaluate(() => {
+  window.__dbg.resetRun(); window.__dbg.state = 'play';
+  const h = window.__dbg.hero, b = window.__dbg.boss;
+  window.__dbg.requestWolf();
+  for (let i=0;i<8 && window.__dbg.wolfT===0;i++) window.__dbg.step(1);
+  for (let i=0;i<24;i++){ h.x = b.x + 4; h.y = b.y + 8; h.inv = 0; window.__dbg.step(1); }
+  return { wolf: window.__dbg.wolfT > 0, bossDead: !!b.dead, hp: b.hp };
+});
+check('Super Auntie does NOT kill the boss', !bossImmune.bossDead, `dead=${bossImmune.bossDead} hp=${bossImmune.hp}`);
+
+// 15 samosa hits defeats him and opens the gate
+const bossFight = await page.evaluate(() => {
+  window.__dbg.resetRun(); window.__dbg.state = 'play';
+  const h = window.__dbg.hero, b = window.__dbg.boss;
+  const gate = { x: 263, y: 6 };
+  const before = window.__dbg.grid[gate.y][gate.x];
+  h.x = b.x - 30; h.y = b.y + 20; h.dir = 1; h.inv = 99999;
+  window.__dbg.step(4);
+  let guard = 0;
+  while (!b.dead && guard++ < 1200) {
+    window.__dbg.press.fire(true); window.__dbg.step(1); window.__dbg.press.fire(false); window.__dbg.step(1);
+  }
+  return { dead: !!b.dead, defeated: window.__dbg.bossDefeated,
+           gateBefore: before, gateAfter: window.__dbg.grid[gate.y][gate.x] };
+});
+check('15 samosas defeat the boss', bossFight.dead && bossFight.defeated, `dead=${bossFight.dead}`);
+check('gate opens after defeat', bossFight.gateBefore === 'B' && bossFight.gateAfter === '.', `${bossFight.gateBefore}->${bossFight.gateAfter}`);
+
+/* reach family -> photo (only after the boss is beaten) */
 const resc = await page.evaluate(() => {
   window.__dbg.resetRun(); window.__dbg.state = 'play';
+  window.__dbg.killBoss();                       // open the path
   const h = window.__dbg.hero; const L = window.__dbg.leah;
   h.x = L.x; h.y = L.y - 16; h.inv = 99999;
   for (let i=0;i<10;i++){ window.__dbg.step(1); if (window.__dbg.state==='photo') break; }
