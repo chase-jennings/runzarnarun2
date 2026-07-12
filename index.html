@@ -109,7 +109,7 @@
 
 //------------------------------------------------ constants
 const TILE = 16;
-const BASE_VW = 288, BASE_VH = 144;    // minimum view (18x9 tiles) — sets the zoom level
+const BASE_VW = 192, BASE_VH = 108;    // minimum view (12x~7 tiles) — zoomed in so Zarna reads BIG
 let VW = BASE_VW, VH = BASE_VH;        // actual view expands to fill the device edge-to-edge
 const LEVEL_H = 192;                   // level is 12 tiles tall; camera follows vertically
 const GRAV = 0.28, MAXFALL = 5.0;
@@ -244,91 +244,85 @@ function flipSprite(sp) {
 }
 
 //------------------------------------------------ palettes + sprites
-// Zarna, 16-bit: black bob, warm brown skin, red bindi, gold hoops,
-// bright magenta kurta with a gold placket + hem, black leggings, white sneakers.
-const P_PLAYER = { H:'#1a1a22', h:'#33333f',
+// Zarna, 20x30 hi-detail: black bob with shine, warm brown skin, red
+// bindi, gold hoops, magenta kurta with gold placket + dots + hem,
+// black leggings, white sneakers with a red stripe.
+const P_PLAYER = { H:'#1a1a22', h:'#3a3a4a',
                    F:'#c98a5e', f:'#a86e46', E:'#20140c', M:'#8c3a2a',
                    K:'#e0359a', k:'#b02878', G:'#ffd75e', g:'#c99a2c',
-                   R:'#e0243c', L:'#20202a', l:'#12121a',
-                   W:'#f4f0f6', w:'#c8c4d4' };
+                   D:'#ffd75e', R:'#e0243c', L:'#20202a', l:'#12121a',
+                   W:'#f4f0f6', w:'#c8c4d4', S:'#e04848' };
 const PLAYER_TOP = [
-".....HHHHHH.....",
-"....HHHHHHHH....",
-"...HHHHHHHHHH...",
-"...HHFFFFFFHH...",
-"...HFFFFRFFFH...",
-"...HFEFFFEFFH...",
-"..GHFFFFFFFFHG..",
-"..gHFFMMMMFHg...",
-"...HFFFFFFH.....",
-"......FFFF......",
-"...KKKKKKKKKK...",
-"..KKKKGGGGKKKK..",
-"..KKKKKGGKKKKK..",
-"..KKKKKGGKKKKK..",
-"..FKKKKGGKKKKF..",
-"..fKKKKGGKKKKf..",
-"..KKGGGGGGGGKK..",
-"....LLLLLLLL....",
-"....LLLllLLL...."
+".......HHHHHH.......",
+".....HHHHHHHHHH.....",
+"....HHHHHHHHHHHH....",
+"....HHhHHHHHHHHH....",
+"....HHFFFFFFFFHH....",
+"....HFFFFFFFFFFH....",
+"....HFFFFRFFFFFH....",
+"...GHFEEFFFFEEFHG...",
+"...GHFFFFFFFFFFHG...",
+"....HFFFMMMMFFFH....",
+".....HFFFFFFFFH.....",
+"......FFFFFFFF......",
+"....KKKKKGGKKKKK....",
+"...KKKKKKGGKKKKKK...",
+"..FKKDKKKGGKKKDKKF..",
+"..fKKKKKKGGKKKKKKf..",
+"..FKKKKDKGGKDKKKKF..",
+"..fKKKKKKGGKKKKKKf..",
+"...KKKDKKGGKKDKKK...",
+"...KKKKKKGGKKKKKK...",
+"...KGGGGGGGGGGGGK...",
+"....kkkkkkkkkkkk....",
+".....LLLLLLLLLL....."
 ];
 const LEGS = {
   idle: [
-    "....LLL..LLL....",
-    "....LLl..lLL....",
-    "....LL....LL....",
-    "...WWW....WWW...",
-    "...www....www..."],
+    ".....LLLL..LLLL.....",
+    ".....LLLl..lLLL.....",
+    ".....LLL....LLL.....",
+    ".....LLL....LLL.....",
+    "....WWWW....WWWW....",
+    "....WSSW....WSSW....",
+    "....wwww....wwww...."],
   run1: [
-    "....LLL..LLL....",
-    "...LLl....lLL...",
-    "..LL........LL..",
-    ".WWW........WWW.",
-    ".www........www."],
+    ".....LLLL..LLLL.....",
+    "....LLLl....lLLL....",
+    "...LLL........LLL...",
+    "..LLL..........LLL..",
+    ".WWWW..........WWWW.",
+    ".WSSW..........WSSW.",
+    ".wwww..........wwww."],
   run2: [
-    ".....LLLLLL.....",
-    ".....LLllLL.....",
-    ".....LL..LL.....",
-    "....WWW..WWW....",
-    "....www..www...."],
+    "......LLLLLLLL......",
+    "......LLLllLLL......",
+    "......LLL..LLL......",
+    "......LLL..LLL......",
+    ".....WWWW..WWWW.....",
+    ".....WSSW..WSSW.....",
+    ".....wwww..wwww....."],
   jump: [
-    "....LLL..LLL....",
-    "...LLL....LLL...",
-    "...WW......WW...",
-    "..www......www..",
-    "................"]
+    ".....LLLL..LLLL.....",
+    "....LLLL....LLLL....",
+    "....LLL......LLL....",
+    "...WWWW......WWWW...",
+    "...WSSW......WSSW...",
+    "...wwww......wwww...",
+    "...................."]
 };
+const HERO_W = 20;
 const sprPlayer = {};
-for (const k in LEGS) sprPlayer[k] = makeSprite(PLAYER_TOP.concat(LEGS[k]), P_PLAYER);
+for (const k in LEGS) sprPlayer[k] = makeSprite(PLAYER_TOP.concat(LEGS[k]), P_PLAYER, HERO_W);
 for (const k in sprPlayer) sprPlayer[k+'L'] = flipSprite(sprPlayer[k]);
 
-// SUPER AUNTIE MODE: the same Zarna sprite, but her kurta and hair turn
-// golden yellow and she glows. Built from the player rows padded into the
-// engine's 20x32 power-form canvas (feet land on the same row the wolf's
-// did), so every draw offset and the taller hitbox behave identically.
-const P_WOLF = { H:'#ffe27a', h:'#ffb01e',
-                 F:'#c98a5e', f:'#a86e46', E:'#20140c', M:'#8c3a2a',
-                 K:'#ffd033', k:'#e0a81e', G:'#fff6d0', g:'#e8ce8a',
-                 R:'#e0243c', L:'#20202a', l:'#12121a',
-                 W:'#f4f0f6', w:'#c8c4d4', A:'#fff8dc' };
+// SUPER AUNTIE MODE: exactly Zarna — same face, same black bob — but her
+// kurta glows golden and she radiates light. No crown, no costume change.
+const P_WOLF = Object.assign({}, P_PLAYER, {
+  K:'#ffd033', k:'#e0a81e', G:'#fff6d0', g:'#e8ce8a', D:'#fff6d0' });
 const WOLF_W = 20;
-const AUNTIE_GLOW = [   // rising golden energy above her hair
-"......A...A..A......",
-".......A.A..A.......",
-"......A.AA.A.A......",
-".......AAAAAA.......",
-"......hAAAAAAh......",
-".......hhhhhh......."
-];
-const pad2 = r => '..' + r + '..';
-function auntieSprite(legs) {
-  return makeSprite(
-    AUNTIE_GLOW.concat(PLAYER_TOP.map(pad2), legs.map(pad2),
-      ["....................", "...................."]),
-    P_WOLF, WOLF_W);
-}
 const sprWolf = {};
-for (const k in LEGS) sprWolf[k] = auntieSprite(LEGS[k]);
+for (const k in LEGS) sprWolf[k] = makeSprite(PLAYER_TOP.concat(LEGS[k]), P_WOLF, WOLF_W);
 for (const k in sprWolf) sprWolf[k+'L'] = flipSprite(sprWolf[k]);
 
 // black german shepherd, faithful and loud
@@ -369,18 +363,18 @@ const sprMoon = makeSprite([
 "..CCCCCC....",
 "...cccc.....",
 "............"], { C:'#f4ead4', c:'#cbb894', T:'#8a5a2c', S:'#dfe8f0' }, 12);
-// sunglasses — celeb incognito ward
+// SPICY chili — grab it for rapid-fire samosas
 const sprCross = makeSprite([
-"............",
-"............",
-"..FFFFFFFF..",
-".GGGGFFGGGG.",
-".GGGGFFGGGG.",
-".gGGGFFGGGg.",
-"..ggg..ggg..",
-"............",
-"............",
-"............"], { G:'#20242e', g:'#0c0e14', F:'#3a3f4a' }, 12);
+".......g....",
+"......gg....",
+"....RRRg....",
+"...RRRRRR...",
+"..RRRRRRRR..",
+"..RWRRRRRR..",
+"..RRRRRRR...",
+"...RRRRRR...",
+"....RRRR....",
+".....RR....."], { R:'#e0402a', W:'#ff8a70', g:'#3f8a34' }, 12);
 
 // Zarna's family waiting at the theater: husband in a blue suit (center)
 // flanked by two happy kids. 16x24 — same footprint as the original captive.
@@ -414,28 +408,6 @@ const sprLeah = makeSprite([
 "................"], P_LEAH);
 const sprLeahL = flipSprite(sprLeah);
 
-// wobbly window AC unit on a movers' rope, 12x8 — slips when you walk under,
-// dangles, then gets winched back up. Classic NYC hazard.
-const P_SPIDER = { K:'#3a3f48', G:'#9aa2ac', V:'#5a626c', W:'#c8d0d8', b:'#8fd0e8' };
-const sprSpider1 = makeSprite([
-"KKKKKKKKKKKK",
-"KWGGGGGGGGWK",
-"KVGVGVGVGVGK",
-"KVGVGVGVGVGK",
-"KGGGGGGGGGGK",
-"KKKKKKKKKKKK",
-".....b......",
-"............"], P_SPIDER, 12);
-const sprSpider2 = makeSprite([
-"KKKKKKKKKKKK",
-"KWGGGGGGGGWK",
-"KGVGVGVGVGVK",
-"KGVGVGVGVGVK",
-"KGGGGGGGGGGK",
-"KKKKKKKKKKKK",
-"............",
-".....b......"], P_SPIDER, 12);
-
 // samosa projectile, 8x8, two flicker frames (golden-brown triangle)
 const P_FIRE = { O:'#d99a3c', o:'#a86e28', Y:'#ffe0a0', R:'#8a5620', W:'#fff0c8' };
 const sprFire1 = makeSprite([
@@ -457,126 +429,129 @@ const sprFire2 = makeSprite([
 "ooooooo.",
 "........"], P_FIRE, 8);
 
-// pizza rat: a little grey rat proudly dragging a slice bigger than itself
-const P_RAT = { G:'#9aa0aa', g:'#6e747e', E:'#20140c', P:'#e8a0b0',
-                C:'#f6b23a', c:'#c07830', R:'#e04848' };
+// cute round rat, 18x10 — no props, just a rat with places to be
+const P_RAT = { G:'#a8aeb8', g:'#7a828c', E:'#20140c', P:'#f0a8b8', N:'#e88098' };
 const sprRat1 = makeSprite([
-"..........CCC...",
-".........CCCCC..",
-"..GG....CCRCCCc.",
-".GGGG..GCRCCCc..",
-"PGGGGGGGGECCc...",
-".gGGGGGGGGg.....",
-"..G..G..G.......",
-"................"], P_RAT);
+"......GG..........",
+".....GPPG.........",
+"...GGGGGGGG.......",
+"..GGGGGGGGGGG.....",
+".PGGGGGGGGGGGG....",
+"P.GGGGGGGGEGGGN...",
+"..gGGGGGGGGGGg....",
+"...GG..GG..GG.....",
+"..................",
+".................."], P_RAT, 18);
 const sprRat2 = makeSprite([
-"..........CCC...",
-".........CCCCC..",
-"..GG....CCRCCCc.",
-"P.GGG..GCRCCCc..",
-".PGGGGGGGECCc...",
-".gGGGGGGGGg.....",
-".G..G..G........",
-"................"], P_RAT);
+"......GG..........",
+".....GPPG.........",
+"...GGGGGGGG.......",
+".PGGGGGGGGGGG.....",
+"P.GGGGGGGGGGGG....",
+"..GGGGGGGGEGGGN...",
+"..gGGGGGGGGGGg....",
+"..GG..GG..GG......",
+"..................",
+".................."], P_RAT, 18);
 const sprRat1L = flipSprite(sprRat1), sprRat2L = flipSprite(sprRat2);
 
-// yellow cab, 26x14 — cruises the street; bounce off the roof for a honk
+// yellow cab, 32x16 — cruises the street; bounce off the roof for a honk
 const P_TAXI = { Y:'#f6c518', y:'#cf9d0e', K:'#1a1a1e', k:'#3a3f46',
                  W:'#a8d8f0', w:'#8a929c', L:'#fff0b0', R:'#e04010', H:'#fff6d0' };
 const TAXI_TOP = [
-"..........KLLK............",
-".......KKKKKKKKKKK........",
-"......KWWWKWWWKWWWK.......",
-"......KWWWKWWWKWWWK.......",
-".YYYYYKKKKKKKKKKKKKYYYY...",
-"YYYYYYYYYYYYYYYYYYYYYYYH..",
-"RYKYKYKYKYKYKYKYKYKYKYYY..",
-"YYYYYYYYYYYYYYYYYYYYYYYH..",
-"yyyyyyyyyyyyyyyyyyyyyyyy.."
+".............KLLLK..............",
+"..........KKKKKKKKKKKK.........",
+".........KWWWWKWWWWKWWK........",
+".........KWWWWKWWWWKWWK........",
+".........KWWWWKWWWWKWWK........",
+".YYYYYYYKKKKKKKKKKKKKKKYYYYY...",
+"YYYYYYYYYYYYYYYYYYYYYYYYYYYYYH.",
+"YKYKYKYKYKYKYKYKYKYKYKYKYKYKYY.",
+"RYYYYYYYYYYYYYYYYYYYYYYYYYYYYH.",
+"yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy."
 ];
 const sprTaxi1 = makeSprite(TAXI_TOP.concat([
-  "..KKKK.........KKKK.......",
-  ".KkwwkK.......KkwwkK......",
-  ".KkwwkK.......KkwwkK......",
-  "..KKKK.........KKKK.......",
-  ".........................."]), P_TAXI, 26);
+  "...KKKKK............KKKKK......",
+  "..KKkwwkKK........KKkwwkKK.....",
+  "..KKwkkwKK........KKwkkwKK.....",
+  "...KKKKK............KKKKK......",
+  "................................",
+  "................................"]), P_TAXI, 32);
 const sprTaxi2 = makeSprite(TAXI_TOP.concat([
-  "..KKKK.........KKKK.......",
-  ".KkwkkK.......KkwkkK......",
-  ".KkkwkK.......KkkwkK......",
-  "..KKKK.........KKKK.......",
-  ".........................."]), P_TAXI, 26);
+  "...KKKKK............KKKKK......",
+  "..KKwkkwKK........KKwkkwKK.....",
+  "..KKkwwkKK........KKkwwkKK.....",
+  "...KKKKK............KKKKK......",
+  "................................",
+  "................................"]), P_TAXI, 32);
 const sprTaxi1L = flipSprite(sprTaxi1), sprTaxi2L = flipSprite(sprTaxi2);
 
-// living-statue street performer (Lady Liberty costume): tiptoes toward
-// Zarna when she looks away, snaps into the frozen statue pose when watched
-const P_GHOST = { V:'#8fd0b0', v:'#5fa080', f:'#b8d8c8', C:'#6fb896',
-                  T:'#ffd75e', E:'#20342c' };
-const sprGhost1 = makeSprite([   // creeping, mid-tiptoe
-"................",
-"...C.C.C........",
-"...VVVVV........",
-"...VfEfV........",
-"...VfffV....VV..",
-"..VVVVVVVVVVV...",
-"..VVVVVVVV......",
-"...VVVVVV.......",
-"...VVVVVV.......",
-"...VVV.VVV......",
-"..VV.....VV.....",
-"..v.......v....."], P_GHOST);
-const sprGhost2 = makeSprite([   // creeping, other foot
-"................",
-"...C.C.C........",
-"...VVVVV........",
-"...VfEfV........",
-"...VfffV..VV....",
-"..VVVVVVVVV.....",
-"..VVVVVVVV......",
-"...VVVVVV.......",
-"...VVVVVV.......",
-"....VVVV........",
-"...VV..VV.......",
-"...v....v......."], P_GHOST);
-const sprGhostF = makeSprite([   // caught! frozen in the Liberty pose
-".........T......",
-".........V......",
-"..C.C.C..V......",
-"..VVVVV..V......",
-"..VfEfV.VV......",
-"..VfffVVV.......",
-".VVVVVVV........",
-".VVVVVVV........",
-".VVVVVVV........",
-".VVVVVVVV.......",
-"VVVVVVVVV.......",
-"vvvvvvvvv......."], P_GHOST);
-const sprGhost1L = flipSprite(sprGhost1), sprGhost2L = flipSprite(sprGhost2);
-const sprGhostFL = flipSprite(sprGhostF);
+// runaway hot-dog cart, 28x20 — striped umbrella, steel cart, loose wheels
+const P_CART = { R:'#e04838', r:'#c9302a', W:'#fff4d8', K:'#2a2e34',
+                 P:'#8a6a3c', S:'#c8ccd4', s:'#9aa0aa', e:'#e8ecf0',
+                 H:'#d98a3c', M:'#f6c518', w:'#6a727c' };
+const CART_TOP = [
+".........RRWWRRWW...........",
+".......RRWWRRWWRRWW.........",
+"......RWWRRWWRRWWRRW........",
+"......KKKKKKKKKKKKKK........",
+"............PP..............",
+"............PP..............",
+"............PP..............",
+"....SSSSSSSSSSSSSSSSSS......",
+"....SeeeeeeeeeeeeeeeeS......",
+"....SHHHHHHHSSSSSSSSSS......",
+"....SHMMMMMHSSSSSSSSSS......",
+"....SHHHHHHHSSSSSSSSSS......",
+"....SSSSSSSSSSSSSSSSSS......",
+"....ssssssssssssssssss......"
+];
+const sprCart1 = makeSprite(CART_TOP.concat([
+  "......KKKK......KKKK........",
+  ".....KKwwKK....KKwwKK.......",
+  ".....KKwwKK....KKwwKK.......",
+  "......KKKK......KKKK........",
+  "............................",
+  "............................"]), P_CART, 28);
+const sprCart2 = makeSprite(CART_TOP.concat([
+  "......KKKK......KKKK........",
+  ".....KwKKwK....KwKKwK.......",
+  ".....KKwwKK....KKwwKK.......",
+  "......KKKK......KKKK........",
+  "............................",
+  "............................"]), P_CART, 28);
+const sprCart1L = flipSprite(sprCart1), sprCart2L = flipSprite(sprCart2);
 
-// pigeon: grey city bird with flapping wings and an orange beak
-const P_EYE = { W:'#c8d0d8', w:'#a4acb4', G:'#8a94a0', g:'#6a747f',
-                P:'#20242e', O:'#e88028', V:'#7a848e' };
+// plump city pigeon, 18x12 — round, dopey, a little iridescent
+const P_EYE = { W:'#d8dee6', w:'#b0b8c2', G:'#8a94a0', g:'#6a747f',
+                P:'#20242e', O:'#e88028', V:'#7a848e', I:'#7ec8a8' };
 const sprEye1 = makeSprite([
-"........GG......",
-".GG....GGGG.....",
-".GGGGGWWWWG.....",
-"...WWWWWWWWWO...",
-"...WWWWPWWWWO...",
-"...gWWWWWWWg....",
-"....gWWWWg......",
-".....V..V.......",
-"................"], P_EYE);
+"...........GGG....",
+".GGG......GGGGG...",
+".GGGG....GGPGGG...",
+"..GGGG..GGGGGGO...",
+"...GGIIWWGGGG.....",
+"..WWWWWWWWWWG.....",
+".WWWWWWWWWWWW.....",
+".gWWWWWWWWWWg.....",
+"..gWWWWWWWWg......",
+"....V...V.........",
+"..................",
+".................."], P_EYE, 18);
 const sprEye2 = makeSprite([
-"................",
-"...GGG..GGG.....",
-"....GGWWWWG.....",
-"...WWWWWWWWWO...",
-"...WWWWPWWWWO...",
-"...gWWWWWWWg....",
-"...GgWWWWgG.....",
-"..GG.V..V.GG....",
-"................"], P_EYE);
+"...........GGG....",
+"..........GGGGG...",
+"..........GGPGGG..",
+"........GGGGGGO...",
+"...GGIIWWGGGG.....",
+".GGWWWWWWWWWG.....",
+".GGGWWWWWWWWW.....",
+"..GGGWWWWWWWg.....",
+"...gWWWWWWWg......",
+"....V...V.........",
+"..................",
+".................."], P_EYE, 18);
+const sprEye1L = flipSprite(sprEye1), sprEye2L = flipSprite(sprEye2);
 
 // pineapple collectible: green spiky top, golden cross-hatched body
 const P_CANDLE = { G:'#4aa83c', g:'#2f7a26', Y:'#f0b028', o:'#b87818' };
@@ -755,27 +730,31 @@ treeCv.width = 32; treeCv.height = 48;
   c.beginPath(); c.arc(22, 16, 5, 0, 7); c.fill();
 }
 
-// hot-dog cart with a striped umbrella, 24x22 street decor
-const cartCv = document.createElement('canvas');
-cartCv.width = 24; cartCv.height = 22;
-{
-  const c = cartCv.getContext('2d');
-  c.fillStyle = '#e04838';                               // umbrella stripes
-  c.fillRect(3, 2, 18, 3); c.fillRect(1, 4, 22, 1);
-  c.fillStyle = '#fff4d8';
-  c.fillRect(6, 2, 4, 3); c.fillRect(14, 2, 4, 3);
-  c.fillStyle = '#c9302a'; c.fillRect(3, 1, 18, 1);
-  c.fillStyle = '#8a6a3c'; c.fillRect(11, 5, 2, 6);      // pole
-  c.fillStyle = '#c8ccd4'; c.fillRect(2, 11, 20, 6);     // cart body
-  c.fillStyle = '#e8ecf0'; c.fillRect(2, 11, 20, 1);
-  c.fillStyle = '#9aa0aa'; c.fillRect(2, 16, 20, 1);
-  c.fillStyle = '#d98a3c'; c.fillRect(5, 13, 8, 2);      // painted hot dog
-  c.fillStyle = '#f6c518'; c.fillRect(6, 13, 6, 1);      // mustard squiggle
-  c.fillStyle = '#2a2e34';                               // wheels + handle
-  c.fillRect(4, 17, 4, 4); c.fillRect(16, 17, 4, 4);
-  c.fillStyle = '#6a727c'; c.fillRect(5, 18, 2, 2); c.fillRect(17, 18, 2, 2);
-  c.fillStyle = '#9aa0aa'; c.fillRect(22, 12, 2, 1);     // push handle
+// funny NYC billboards, pre-rendered with the pixel font
+function makeBillboard(w, h, bg, frame, draw) {
+  const cv = document.createElement('canvas');
+  cv.width = w; cv.height = h;
+  const c = cv.getContext('2d');
+  c.fillStyle = frame; c.fillRect(0, 0, w, h);
+  c.fillStyle = bg; c.fillRect(2, 2, w-4, h-4);
+  draw(c);
+  c.fillStyle = '#6a727c'; c.fillRect(w>>2, h, 2, 6); c.fillRect(w - (w>>2), h, 2, 6);
+  return cv;
 }
+const bill0Cv = makeBillboard(64, 26, '#2a1a3a', '#ffd75e', c => {
+  drawText(c, 'ZARNA GARG', 12, 5, '#ff4aa8');
+  drawText(c, 'TONIGHT!', 16, 14, '#ffe27a');
+  c.fillStyle = '#fff0b0';
+  for (let i = 4; i < 60; i += 8) { c.fillRect(i, 1, 1, 1); c.fillRect(i, 24, 1, 1); }
+});
+const bill1Cv = makeBillboard(46, 20, '#a02838', '#fff4d8', c => {
+  drawText(c, 'SOLD', 15, 4, '#fff4d8');
+  drawText(c, 'OUT', 17, 11, '#ffd75e');
+});
+const bill2Cv = makeBillboard(50, 20, '#1e3a2a', '#e8ce8a', c => {
+  drawText(c, 'CHAI', 17, 4, '#e8ce8a');
+  drawText(c, 'SPECIAL', 11, 11, '#f4f0f6');
+});
 
 // distant NYC skyline building cluster, 16-bit backdrop layer
 const castleCv = document.createElement('canvas');
@@ -836,7 +815,7 @@ function makeLantern(lit) {
 const sprLanternOff = makeLantern(false), sprLanternOn = makeLantern(true);
 
 //------------------------------------------------ level
-const COLS = 192, ROWS = 12;
+const COLS = 240, ROWS = 12;
 let grid;
 const enemies = [], candles = [], decor = [], checkpoints = [], powerups = [];
 let doorRect = null, leah = null;
@@ -847,17 +826,14 @@ function fill(x0,y0,x1,y1,ch){ for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++) s
 function platform(x0, x1, y) { for (let x=x0; x<=x1; x++) set(x,y,'-'); }
 function spikes(x0, x1) { for (let x=x0; x<=x1; x++) set(x,9,'^'); }
 function candle(x, y) { candles.push({x:x*TILE+4, y:y*TILE+2, taken:false, t:Math.random()*99}); }
-function rat(x)  { enemies.push({type:'z', art:'rat',  x:x*TILE, y:10*TILE-7,  w:12, h:7,  vx:-0.4,  vy:0, dead:0, t:0, sx:x*TILE}); }
-function taxi(x) { enemies.push({type:'z', art:'taxi', x:x*TILE, y:10*TILE-12, w:22, h:12, vx:-0.55, vy:0, dead:0, t:0, sx:x*TILE}); }
-function bat(x, y) { enemies.push({type:'b', x:x*TILE, y:y*TILE, w:14, h:8, vx:0, vy:0, dead:0, t:0, mode:0, sx:x*TILE, sy:y*TILE}); }
-function ghost(x, y) { enemies.push({type:'g', x:x*TILE, y:y*TILE, w:13, h:11, vx:0, vy:0, dead:0, t:Math.random()*99, sx:x*TILE, sy:y*TILE}); }
-function spider(x, row, len) {
-  const ay = row*TILE + 14;
-  enemies.push({type:'s', x:x*TILE+2, y:ay, w:11, h:8, vx:0, vy:0, dead:0, t:0, ax:ay, dropY:ay+len, mode:0});
-}
+function rat(x)  { enemies.push({type:'z', art:'rat',  x:x*TILE, y:10*TILE-8,  w:14, h:8,  vx:-0.4,  vy:0, dead:0, t:0, sx:x*TILE}); }
+function taxi(x) { enemies.push({type:'z', art:'taxi', x:x*TILE, y:10*TILE-13, w:26, h:13, vx:-0.55, vy:0, dead:0, t:0, sx:x*TILE}); }
+function hotcart(x) { enemies.push({type:'z', art:'cart', x:x*TILE, y:10*TILE-16, w:22, h:16, vx:-0.5, vy:0, dead:0, t:0, sx:x*TILE}); }
+function bat(x, y) { enemies.push({type:'b', x:x*TILE, y:y*TILE, w:14, h:9, vx:0, vy:0, dead:0, t:0, mode:0, sx:x*TILE, sy:y*TILE}); }
 function tomb(x, v) { decor.push({t: v ? 'tomb2':'tomb', x:x*TILE, y:9*TILE}); }
 function tree(x) { decor.push({t:'tree', x:x*TILE, y:9*TILE-32}); }
-function cart(x) { decor.push({t:'cart', x:x*TILE, y:10*TILE-22}); }
+function bill(x, k) { decor.push({t:'bill'+k, x:x*TILE, y:26}); }
+function sign(x, txt) { decor.push({t:'sign', x:x*TILE, y:10*TILE-36, txt}); }
 function checkpoint(x) { checkpoints.push({x:x*TILE, y:8*TILE, hit:false}); }
 function pow(type, x, y) { powerups.push({type, x:x*TILE+2, y:y*TILE+2, taken:false, t:Math.random()*99}); }
 
@@ -865,96 +841,86 @@ function buildLevel() {
   grid = Array.from({length: ROWS}, () => Array(COLS).fill('.'));
   enemies.length = 0; candles.length = 0; decor.length = 0;
   checkpoints.length = 0; powerups.length = 0;
+  seenTags = {}; quip = null;
 
-  // -- opening stretch: learn to run & jump
-  ground(0, 18);
-  tomb(4); tomb(7, 1); tree(10); tomb(14); cart(17);
-  candle(6, 8); candle(8, 8); candle(10, 8);
-  rat(13);
-  set(16,7,'?'); set(17,7,'B'); set(18,7,'?');
+  // ============ ACT 1 · THE BROWNSTONE BLOCK — home turf, learn the ropes
+  ground(0, 21);
+  tomb(4); tree(8); tomb(12, 1);
+  candle(6, 8); candle(7, 8); candle(8, 8);
+  rat(16);
+  set(18,7,'?'); set(19,7,'B'); set(20,7,'?');
 
-  // -- first pit
-  ground(22, 34);
-  platform(24, 27, 7);
-  candle(25, 5); candle(26, 5);
-  spider(26, 7, 24);
-  bat(30, 3); taxi(32);
-  tomb(28);
+  ground(24, 42);
+  bill(27, 0);                                   // ZARNA GARG — TONIGHT!
+  tree(33); tomb(38);
+  candle(25, 8); candle(26, 8);
+  taxi(31);
+  platform(35, 38, 7); candle(36, 5); candle(37, 5);
 
-  // -- bone bridge over pit
-  platform(35, 37, 8);
-  candle(36, 6);
+  ground(45, 62);
+  tomb(47, 1); tree(52); tomb(58);
+  taxi(50); rat(58);
+  set(54,7,'?'); set(55,7,'B'); set(56,7,'?');
+  candle(46, 8); candle(60, 8); candle(61, 8);
+  checkpoint(61);
 
-  ground(38, 52);
-  taxi(42); rat(46);
-  tree(40); tomb(44, 1);
-  set(49,9,'#'); fill(50,8,50,9,'#'); fill(51,7,51,9,'#');   // stair up
+  // ============ ACT 2 · MIDTOWN RUSH — busier streets, first power-ups
+  ground(65, 86);
+  bill(70, 1);                                   // SOLD OUT
+  pow('heart', 67, 8);
+  bat(70, 3);
+  taxi(75);
+  platform(78, 81, 7); candle(79, 5); candle(80, 5); pow('cross', 80, 5);   // SPICY samosas
+  spikes(84, 85);
 
-  // -- long gap with sky bones
-  platform(54, 55, 6);
-  candle(54, 4); pow('wolf', 55, 4);
+  ground(89, 110);
+  bat(92, 2);
+  hotcart(98);
+  tree(94); tomb(101, 1);
+  candle(90, 8); candle(91, 8); candle(99, 8); candle(100, 8);
+  set(104,7,'?'); set(105,7,'B'); set(106,7,'?');
+  set(107,9,'#'); fill(108,8,108,9,'#'); fill(109,7,109,9,'#');   // stair up
 
-  // -- graveyard row + first ghost + spikes
-  ground(57, 75);
-  tomb(59); tomb(61, 1); tomb(63);
-  pow('cross', 61, 8);
-  ghost(64, 4);
-  spikes(66, 67);
-  platform(65, 69, 7);
-  spider(67, 7, 18);
-  candle(66, 5); candle(67, 5); candle(68, 5);
-  rat(72);
-  checkpoint(74);
+  platform(112, 115, 7); candle(113, 5); candle(114, 5); pow('wolf', 114, 5);   // CHAI no.1
+  ground(113, 133);
+  taxi(121); bat(125, 3); rat(129);
+  bill(126, 2);                                  // bodega CHAI SPECIAL
+  candle(117, 8); candle(118, 8); candle(131, 8);
+  checkpoint(132);
 
-  ground(79, 95);
-  tree(82); cart(85);
-  set(84,6,'?'); set(85,6,'B'); set(86,6,'?');
-  taxi(88); bat(90, 2); rat(93);
-  tomb(91, 1);
+  // ============ ACT 3 · THEATER DISTRICT — the marquee countdown
+  ground(136, 158);
+  sign(139, 'ON IN 5 MIN');
+  candle(137, 8); candle(138, 8);
+  hotcart(145); taxi(151);
+  tree(142); tomb(148);
+  platform(152, 155, 7); candle(153, 5); candle(154, 5);
 
-  platform(97, 98, 7);
-  candle(98, 5); pow('heart', 97, 5);
-  spider(98, 7, 28);
+  ground(161, 183);
+  sign(164, 'ON IN 3 MIN');
+  bat(167, 2); rat(171); hotcart(177);
+  set(172,7,'?'); set(173,7,'B'); set(174,7,'?');
+  pow('wolf', 180, 8);                           // CHAI no.2
+  candle(162, 8); candle(168, 8); candle(169, 8); candle(182, 8);
+  tomb(179, 1);
 
-  // -- pyramid hill
-  ground(100, 118);
-  ghost(105, 3);
-  candle(103, 7); candle(104, 7);
-  taxi(108);
-  set(110,9,'#'); fill(111,8,111,9,'#'); fill(112,7,112,9,'#');
-  fill(113,6,113,9,'#'); fill(114,7,114,9,'#'); fill(115,8,115,9,'#'); set(116,9,'#');
-  candle(113, 3);
-  tomb(117, 1);
+  ground(186, 205);
+  sign(189, 'ON IN 1 MIN!');
+  taxi(193); bat(197, 3);
+  platform(198, 201, 7); candle(199, 5); candle(200, 5); pow('cross', 200, 5);
+  candle(187, 8); candle(195, 8);
+  checkpoint(204);
 
-  // -- spike alley: high road or timing
-  ground(122, 140);
-  tomb(124); spikes(128, 129);
-  platform(126, 133, 7);
-  spider(132, 7, 18);
-  candle(128, 5); candle(129, 5); candle(130, 5); candle(131, 5);
-  taxi(136); tomb(138, 1);
-  pow('heart', 134, 8);
-
-  platform(142, 143, 7);
-  pow('wolf', 142, 5);
-
-  // -- final gauntlet
-  ground(145, 175);
-  checkpoint(147);
-  tomb(148); tree(151); tomb(153, 1); tomb(157); tree(162); tomb(164, 1);
-  cart(146); taxi(150); bat(152, 2); rat(155); bat(158, 3); taxi(160); ghost(163, 3); rat(166);
-  pow('cross', 159, 8);
-  candle(168, 8); candle(169, 8); candle(170, 8);
-  set(171,9,'#'); fill(172,8,172,9,'#'); fill(173,7,173,9,'#');
-
-  // -- the crypt: webbed beam overhead, Leah at the door
-  ground(176, 191);
-  fill(177, 2, 191, 2, 'B');
-  fill(187, 3, 191, 9, 'B');
-  spider(179, 2, 92); spider(182, 2, 78);
-  candle(183, 6); candle(186, 6);
-  doorRect = { x: 184*TILE, y: 8*TILE, w: 32, h: 32 };
-  leah = { x: 183*TILE + 2, y: 136, saved: false };   // feet on the ground, 24px tall
+  // ============ ACT 4 · THE STAGE DOOR — family in sight!
+  ground(208, 239);
+  fill(209, 2, 239, 2, 'B');                     // theater awning overhead
+  fill(232, 3, 239, 9, 'B');                     // theater wall past the door
+  tree(212); tomb(216, 1);
+  rat(219); taxi(224);
+  candle(210, 8); candle(211, 8); candle(214, 8); candle(221, 8); candle(222, 8);
+  pow('heart', 226, 8);
+  doorRect = { x: 228*TILE, y: 8*TILE, w: 32, h: 32 };
+  leah = { x: 227*TILE + 2, y: 136, saved: false };   // the family, waiting at the stage door
 }
 function tileAt(tx, ty) {
   if (tx < 0 || tx >= COLS) return '#';
@@ -1007,7 +973,7 @@ const SFX = {
   check()   { tone(440, 440, 0.09, 'square', 0.05); tone(660, 660, 0.12, 'square', 0.05, 0.09); },
   heart()   { tone(520, 780, 0.15, 'triangle', 0.07); },
   win()     { [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, f, 0.16, 'square', 0.06, i*0.11)); },
-  ghost()   { tone(500, 900, 0.18, 'triangle', 0.04); },   // camera focus chirp
+  ghost()   { tone(620, 520, 0.07, 'triangle', 0.05); tone(760, 640, 0.09, 'triangle', 0.04, 0.09); },   // pigeon coo-coo
   howl()    { // Super Auntie power-up: bright ascending chime + shimmer whoosh
               [523, 659, 784, 1047].forEach((f, i) => tone(f, f, 0.12, 'square', 0.06, i*0.06));
               tone(1047, 1568, 0.4, 'sine', 0.05, 0.24); noise(0.15, 0.03); },
@@ -1022,9 +988,13 @@ const SFX = {
                 tone(880, 988, 0.16, 'triangle', 0.07, d + 0.12);
               } },
   bark()    { tone(480, 210, 0.07, 'square', 0.09); },   // unused (dog removed)
-  holy()    { // sunglasses cool snap
-              tone(880, 1320, 0.06, 'square', 0.05); tone(1320, 660, 0.12, 'triangle', 0.05, 0.06);
-              noise(0.02, 0.03); }
+  holy()    { // SPICY! chili sizzle-pop
+              tone(660, 1180, 0.07, 'square', 0.06); tone(1180, 880, 0.10, 'square', 0.05, 0.07);
+              noise(0.10, 0.04, 0.03); },
+  giggle()  { // quick crowd chuckle
+              tone(560, 500, 0.05, 'triangle', 0.07);
+              tone(680, 610, 0.05, 'triangle', 0.06, 0.06);
+              tone(820, 740, 0.06, 'triangle', 0.05, 0.12); }
 };
 
 //------------------------------------------------ music: chiptune step sequencer
@@ -1035,30 +1005,30 @@ const SFX = {
 const M2F = m => 440 * Math.pow(2, (m - 69) / 12);
 const __ = null;
 const TRACKS = {
-  night: {
-    step: 0.326, hatMod: 8, leadVol: 0.026, leadDur: 0.30,
+  night: {   // bright bouncy comedy-caper in G major — a real hook, no gloom
+    step: 0.17, hatMod: 2, leadVol: 0.034, leadDur: 0.15,
     lead: [
-      67,__,71,__,74,__,71,__,  76,__,74,__,71,__,67,__,
-      69,__,72,__,76,__,72,__,  74,__,72,__,69,__,67,__,
-      67,__,71,__,74,__,79,__,  78,__,74,__,71,__,74,__,
-      72,__,74,__,76,__,79,__,  71,__,74,__,67,__,__,__],
+      71,__,74,76,__,76,__,74,  76,__,79,__,76,74,71,__,
+      69,__,72,74,__,74,__,72,  74,__,76,__,74,72,69,__,
+      71,__,74,76,__,76,__,74,  79,__,78,79,81,__,79,__,
+      76,__,74,__,72,__,74,__,  71,__,69,__,67,__,__,__],
     bass: [
-      43,43,43,43, 48,48,48,48, 45,45,45,45, 50,50,47,50,
-      43,43,43,43, 48,48,48,48, 45,45,45,45, 47,47,43,43]
+      43,43,50,43, 43,43,50,43, 50,50,57,50, 50,50,57,50,
+      52,52,59,52, 52,52,59,52, 48,48,55,48, 50,50,55,50]
   },
-  wolf: {
-    step: 0.15, hatMod: 4, leadVol: 0.032, leadDur: 0.13,
+  wolf: {    // SUPER AUNTIE! soaring major arpeggios
+    step: 0.14, hatMod: 2, leadVol: 0.036, leadDur: 0.12,
     lead: [
-      72,__,76,__,79,__,84,__,  83,__,79,__,76,__,72,__,
-      74,__,77,__,81,__,86,__,  84,__,81,__,77,__,74,__],
+      67,71,74,79, 76,79,83,86, 84,__,79,__,76,__,74,__,
+      69,72,76,81, 79,83,86,88, 86,__,83,__,79,__,76,__],
     bass: [
-      48,48,60,48, 50,50,62,50, 53,53,65,53, 55,55,58,55]
+      43,43,55,43, 45,45,57,45, 48,48,60,48, 50,50,62,50]
   },
-  win: {
-    step: 0.24, hatMod: 8, leadVol: 0.034, leadDur: 0.22,
+  win: {     // curtain-up fanfare
+    step: 0.22, hatMod: 4, leadVol: 0.036, leadDur: 0.20,
     lead: [
-      72,__,76,__,79,__,76,__,  84,__,__,__,81,__,79,__,
-      77,__,79,__,81,__,84,__,  79,__,76,__,72,__,__,__],
+      72,__,76,__,79,__,76,79,  84,__,__,__,81,__,79,__,
+      77,__,79,__,81,__,84,__,  79,__,76,79,72,__,__,__],
     bass: [
       48,48,55,55, 57,57,53,53, 48,48,55,55, 53,53,55,55]
   }
@@ -1085,9 +1055,11 @@ function startMusic() {
         if (L != null) tone(M2F(L), M2F(L), tr.leadDur, 'square', tr.leadVol, dt);
         if (s % 2 === 0) {
           const B = tr.bass[(s >> 1) % tr.bass.length];
-          tone(M2F(B), M2F(B), tr.step * 0.9, 'triangle', 0.05, dt);
+          tone(M2F(B), M2F(B), tr.step * 0.9, 'triangle', 0.055, dt);
         }
-        if (s % tr.hatMod === tr.hatMod / 2) noise(0.03, 0.012, dt);
+        if (s % 8 === 0) tone(95, 42, 0.10, 'sine', 0.055, dt);     // kick thump on the beat
+        if (s % 8 === 4) tone(82, 42, 0.07, 'sine', 0.035, dt);     // lighter backbeat
+        if (s % tr.hatMod === tr.hatMod / 2) noise(0.025, 0.02, dt);
       }
       music.next += tr.step;
       music.step++;
@@ -1095,22 +1067,19 @@ function startMusic() {
   }, 60);
 }
 function startAmbience() {
+  // no drone pad — this is a sunny comedy, not a haunting. Just the odd
+  // faraway songbird / bike bell to make the city feel alive.
   const a = audio(); if (!a || ambOn) return;
   ambOn = true;
-  const g = a.createGain(); g.gain.value = 0.018;
-  const lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 160;
-  const o1 = a.createOscillator(); o1.type = 'sawtooth'; o1.frequency.value = 55;
-  const o2 = a.createOscillator(); o2.type = 'sawtooth'; o2.frequency.value = 55.7;
-  const lfo = a.createOscillator(); lfo.frequency.value = 0.13;
-  const lfoG = a.createGain(); lfoG.gain.value = 0.010;
-  lfo.connect(lfoG); lfoG.connect(g.gain);
-  o1.connect(lp); o2.connect(lp); lp.connect(g); g.connect(a.destination);
-  o1.start(); o2.start(); lfo.start();
-  (function cityHum() {
+  (function cityChirp() {
     setTimeout(() => {
-      if (state === 'play') tone(660 + Math.random()*220, 880, 0.5, 'sine', 0.010);   // faint distant traffic/birds
-      cityHum();
-    }, 9000 + Math.random()*9000);
+      if (state === 'play') {
+        const f = 900 + Math.random()*500;
+        tone(f, f*1.3, 0.09, 'sine', 0.010);
+        tone(f*1.2, f*1.5, 0.08, 'sine', 0.008, 0.12);
+      }
+      cityChirp();
+    }, 8000 + Math.random()*10000);
   })();
 }
 
@@ -1225,7 +1194,8 @@ try { best = parseInt(localStorage.getItem('graverunner.best') || '0', 10) || 0;
 const player = {
   x:0, y:0, vx:0, vy:0, w:10, h:22,
   dir:1, onGround:false, coyote:0, jbuf:0,
-  anim:0, inv:0, spawnX:0, spawnY:0
+  anim:0, inv:0, spawnX:0, spawnY:0,
+  sqT:0, wasGround:false, fallV:0
 };
 const dog = { x:0, y:0, vx:0, vy:0, w:13, h:10, dir:1, onGround:false, anim:0, barkT:0, popT:0 };
 let wolfT = 0, crossT = 0, pendingWolf = false;
@@ -1262,6 +1232,7 @@ function toWolf() {
   shake = 5;
   poof(player.x + 5, player.y + 10, '#ffd75e', 14);
   addPop(player.x + 5, player.y - 12, 'SUPER AUNTIE MODE!', '#ffd75e');
+  sayQuip('CHAI FIRST. FAME SECOND.');
   SFX.howl();
 }
 function toHuman() {
@@ -1274,6 +1245,19 @@ function poof(x, y, col, n=8) {
   for (let i = 0; i < n; i++)
     particles.push({ x, y, vx:(Math.random()-0.5)*2.4, vy:-Math.random()*2.2, t:0, life:20+Math.random()*15, col });
 }
+// comedy feedback: confetti bursts and a rotating laugh word on every stomp
+function confetti(x, y) {
+  for (const c of ['#ff4aa8', '#ffd75e', '#4ac8ff', '#7ee07e']) poof(x, y, c, 4);
+}
+const LAUGHS = ['HA!', 'LOL!', 'HA HA!', '+200'];
+let laughIdx = 0;
+function laughWord() { return LAUGHS[laughIdx++ % LAUGHS.length]; }
+// first-sighting name tags so every enemy introduces itself once per run
+let seenTags = {};
+const TAG_NAMES = { taxi:'TAXI!', rat:'A RAT!', cart:'HOT DOG CART!', b:'PIGEON!' };
+// Zarna's one-liners: a small caption that follows her for a moment
+let quip = null;
+function sayQuip(txt) { quip = { txt, t: 0 }; }
 function gainSoul(x, y) {
   souls++;
   score += 100;
@@ -1285,6 +1269,7 @@ function hurt(fromX) {
   if (player.inv > 0) return;
   hearts--;
   shake = 8; flashT = 6;
+  if (hearts > 0 && Math.random() < 0.5) sayQuip('BETA, MOVE.');
   if (hearts <= 0) {
     state = 'dying'; stateT = 0;
     player.vy = -5; player.vx = 0;
@@ -1405,7 +1390,7 @@ function updatePlayer() {
       y: player.y + (isWolf ? 16 : 12),
       vx: 3.4 * player.dir, vy: 0.3, t: 0
     });
-    fireCD = 20;
+    fireCD = crossT > 0 ? 5 : 20;   // SPICY MODE: samosas on tap
     SFX.fire();
   }
   if (!input.jumpHeld && player.vy < jumpV * JUMP_CUT) player.vy = jumpV * JUMP_CUT;
@@ -1433,6 +1418,19 @@ function updatePlayer() {
   if (player.x > COLS*TILE - player.w) { player.x = COLS*TILE - player.w; player.vx = 0; }
 
   if (player.inv > 0) player.inv--;
+
+  // ---- juice: landing squash, running dust, Super Auntie sparkles
+  if (player.sqT > 0) player.sqT--;
+  if (player.onGround && !player.wasGround && player.fallV > 2.2) {
+    player.sqT = 7;
+    poof(player.x + player.w/2, player.y + player.h - 1, '#c8ccd4', 4);
+  }
+  player.wasGround = player.onGround;
+  player.fallV = player.vy;
+  if (player.onGround && Math.abs(player.vx) > 1.1 && (frame % 9) === 0)
+    poof(player.x + player.w/2 - player.dir*5, player.y + player.h - 1, '#d8dce2', 2);
+  if (wolfT > 0 && (frame % 5) === 0)
+    poof(player.x + Math.random()*player.w, player.y + Math.random()*player.h, '#ffe27a', 1);
 
   // spikes
   const cx0 = Math.floor((player.x+2)/TILE), cx1 = Math.floor((player.x+player.w-2)/TILE);
@@ -1464,7 +1462,8 @@ function updatePlayer() {
         else pendingWolf = true;
       } else if (pu.type === 'cross') {
         crossT = 600;
-        addPop(pu.x+6, pu.y-6, 'INCOGNITO!', '#8fd3ff');
+        addPop(pu.x+6, pu.y-6, 'SPICY MODE!', '#ff8a50');
+        sayQuip('EXTRA SPICY!');
         SFX.holy();
       } else if (pu.type === 'heart') {
         if (hearts < 3) { hearts++; addPop(pu.x+4, pu.y-6, '+HEART', '#e02848'); SFX.heart(); }
@@ -1480,7 +1479,8 @@ function updatePlayer() {
       cp.hit = true;
       player.spawnX = cp.x; player.spawnY = cp.y;
       SFX.check();
-      addPop(cp.x, cp.y - 10, 'NEXT STOP', '#2a6ea8');
+      addPop(cp.x, cp.y - 10, 'CHECKPOINT!', '#2a6ea8');
+      sayQuip(['RUNNING LATE? ME? NEVER.', 'ON IN 5 MIN? PLENTY.', 'ALMOST SHOWTIME!'][(checkpoints.indexOf(cp)) % 3]);
     }
   }
 
@@ -1504,11 +1504,13 @@ function updateEnemies() {
   const px = player.x + player.w/2;
   for (const e of enemies) {
     if (e.dead) { e.dead++; continue; }
-    const dist = Math.abs(e.x - camX - VW/2);
-    if (e.x < camX - 48 || e.x > camX + VW + 48) {
-      if (e.type !== 'g') continue;          // ghosts stay hungry
-    }
+    if (e.x < camX - 48 || e.x > camX + VW + 48) continue;
     e.t++;
+    // first sighting: introduce the character with a floating name tag
+    if (!seenTags[e.art || e.type]) {
+      seenTags[e.art || e.type] = true;
+      addPop(e.x + e.w/2, e.y - 10, TAG_NAMES[e.art || e.type] || '', '#fff6d0');
+    }
 
     if (e.type === 'z') {
       e.vy = Math.min(e.vy + GRAV, MAXFALL);
@@ -1537,71 +1539,29 @@ function updateEnemies() {
       }
     }
 
-    else if (e.type === 's') {
-      // hangs overhead, slips down the rope, dangles, gets winched back up
-      if (e.mode === 0) {
-        e.y = e.ax + Math.sin(e.t * 0.06) * 1.5;
-        if (e.t > 40 && Math.abs((player.x + player.w/2) - (e.x + 5)) < 34 && player.y > e.ax) {
-          e.mode = 1;
-          SFX.ghost();
-        }
-      } else if (e.mode === 1) {
-        e.y += 2.3;
-        if (e.y >= e.dropY) { e.y = e.dropY; e.mode = 2; e.t = 0; }
-      } else if (e.mode === 2) {
-        e.y = e.dropY + Math.sin(e.t * 0.12) * 3;
-        if (e.t > 75) e.mode = 3;
-      } else {
-        e.y -= 0.7;
-        if (e.y <= e.ax) { e.y = e.ax; e.mode = 0; e.t = 0; }
-      }
-    }
-
-    else if (e.type === 'g') {
-      if (Math.abs(px - e.x) > 170) { e.t--; continue; }
-      if (crossT > 0) {
-        // holy ward: the ghost flees, eyes averted
-        e.shy = false;
-        const dx = (e.x + e.w/2) - px;
-        e.x += Math.sign(dx || 1) * 0.6;
-        e.y += Math.sin(e.t * 0.06) * 0.25;
-      } else {
-        const facingIt = (Math.sign((e.x + e.w/2) - px) === player.dir);
-        e.shy = facingIt;
-        if (!facingIt) {
-          const dx = px - (e.x + e.w/2), dy = (player.y + 4) - (e.y + e.h/2);
-          const m = Math.hypot(dx, dy) || 1;
-          e.x += (dx/m) * 0.42;
-          e.y += (dy/m) * 0.42;
-        }
-        e.y += Math.sin(e.t * 0.06) * 0.25;
-      }
-    }
-
     // player collision
     if (state === 'play' &&
         player.x < e.x + e.w && player.x + player.w > e.x &&
         player.y < e.y + e.h && player.y + player.h > e.y) {
       if (wolfT > 0) {
-        // Super Auntie Zarna blasts through everything, even living statues
+        // Super Auntie Zarna blasts through everything
         e.dead = 1;
         score += 200;
-        addPop(e.x, e.y - 8, '+200');
-        poof(e.x + e.w/2, e.y + e.h/2, e.type === 'g' ? '#ffe08a' : '#e88028', 12);
-        SFX.stomp();
+        addPop(e.x, e.y - 8, laughWord(), '#ffe27a');
+        confetti(e.x + e.w/2, e.y + e.h/2);
+        SFX.giggle();
         continue;
       }
       if (player.inv > 0) continue;
-      if (e.type === 'g' && crossT > 0) continue;   // protected
-      const stompable = e.type !== 'g';
-      if (stompable && player.vy > 0.5 && (player.y + player.h) - e.y < 9) {
+      if (player.vy > 0.5 && (player.y + player.h) - e.y < 9) {
         e.dead = 1;
         player.vy = -4.6;
         score += 200;
-        addPop(e.x, e.y - 8, '+200');
-        poof(e.x + e.w/2, e.y + e.h/2, e.art === 'taxi' ? '#f6c518' : e.type === 'b' ? '#b8c0c8' : '#9aa0aa', 9);
-        SFX.stomp();
+        addPop(e.x, e.y - 8, laughWord(), '#ffe27a');
+        confetti(e.x + e.w/2, e.y + e.h/2);
+        SFX.giggle();
         if (e.art === 'taxi') { tone(340, 300, 0.13, 'square', 0.09); tone(430, 380, 0.13, 'square', 0.09, 0.03); }   // honk!
+        if (e.art === 'cart') { tone(700, 900, 0.10, 'square', 0.06); noise(0.05, 0.03); }                            // squeaky cart
       } else {
         hurt(e.x + e.w/2);
       }
@@ -1631,14 +1591,9 @@ function updateFireballs() {
     for (const e of enemies) {
       if (e.dead) continue;
       if (fb.x < e.x + e.w && fb.x + 6 > e.x && fb.y < e.y + e.h && fb.y + 6 > e.y) {
-        if (e.type === 'g') {           // living statues shrug off samosas
-          poof(fb.x + 3, fb.y + 3, '#fff6d0', 6);
-          SFX.ghost();
-          return false;
-        }
         e.dead = 1;
         score += 200;
-        addPop(e.x, e.y - 8, '+200');
+        addPop(e.x, e.y - 8, laughWord(), '#ffe27a');
         poof(e.x + e.w/2, e.y + e.h/2, '#ff8c28', 12);
         SFX.sizzle();
         return false;
@@ -1838,7 +1793,18 @@ function drawDecor() {
     if (d.t === 'tomb') ctx.drawImage(sprTomb, dx, d.y - cy);
     else if (d.t === 'tomb2') ctx.drawImage(sprTomb2, dx, d.y - cy);
     else if (d.t === 'tree') ctx.drawImage(treeCv, dx, d.y - cy);
-    else if (d.t === 'cart') ctx.drawImage(cartCv, dx, d.y - cy);
+    else if (d.t === 'bill0') ctx.drawImage(bill0Cv, dx, d.y - cy);
+    else if (d.t === 'bill1') ctx.drawImage(bill1Cv, dx, d.y - cy);
+    else if (d.t === 'bill2') ctx.drawImage(bill2Cv, dx, d.y - cy);
+    else if (d.t === 'sign') {
+      // theater-district countdown marquee: lit board on a post
+      const sy = d.y - cy, w = textW(d.txt) + 8;
+      ctx.fillStyle = '#4a4d54'; ctx.fillRect(dx + (w>>1) - 1, sy + 12, 2, 24);
+      ctx.fillStyle = '#2a1a3a'; ctx.fillRect(dx, sy, w, 12);
+      ctx.fillStyle = (frame >> 4) & 1 ? '#ffd75e' : '#c99a2c';
+      ctx.fillRect(dx, sy, w, 1); ctx.fillRect(dx, sy + 11, w, 1);
+      drawText(ctx, d.txt, dx + 4, sy + 3, '#ffe27a');
+    }
   }
   for (const cp of checkpoints) {
     const dx = Math.floor(cp.x - camX);
@@ -1927,47 +1893,31 @@ function drawEnemies() {
   for (const e of enemies) {
     if (e.dead > 22) continue;
     const dx = Math.floor(e.x - camX);
-    if (dx < -24 || dx > VW + 24) continue;
+    if (dx < -36 || dx > VW + 36) continue;
     const dy = Math.floor(e.y - cy);
     if (e.dead) {                       // squash flicker
       ctx.globalAlpha = 1 - e.dead/22;
       if (e.type === 'z') {
-        if (e.art === 'taxi') ctx.drawImage(sprTaxi1, dx-2, dy+6, 26, 6);
-        else ctx.drawImage(sprRat1, dx-2, dy+4, 16, 4);
+        if (e.art === 'taxi') ctx.drawImage(sprTaxi1, dx-3, dy+7, 32, 6);
+        else if (e.art === 'cart') ctx.drawImage(sprCart1, dx-3, dy+10, 28, 6);
+        else ctx.drawImage(sprRat1, dx-2, dy+4, 18, 4);
       }
-      else if (e.type === 'b') ctx.drawImage(sprEye2, dx, dy+2, 16, 5);
+      else if (e.type === 'b') ctx.drawImage(sprEye2, dx-2, dy+3, 18, 6);
       ctx.globalAlpha = 1;
       continue;
     }
     if (e.type === 'z') {
-      if (e.art === 'taxi') {
-        const f = (e.t >> 3) & 1;   // wheels roll faster than feet patter
-        const sp = e.vx > 0 ? (f ? sprTaxi1 : sprTaxi2) : (f ? sprTaxi1L : sprTaxi2L);
-        ctx.drawImage(sp, dx-2, dy-1);
-      } else {
-        const f = (e.t >> 4) & 1;
-        const sp = e.vx > 0 ? (f ? sprRat1 : sprRat2) : (f ? sprRat1L : sprRat2L);
-        ctx.drawImage(sp, dx-2, dy-1);
-      }
+      const wheels = (e.t >> 3) & 1;   // wheels roll faster than feet patter
+      const feet = (e.t >> 4) & 1;
+      if (e.art === 'taxi')
+        ctx.drawImage(e.vx > 0 ? (wheels ? sprTaxi1 : sprTaxi2) : (wheels ? sprTaxi1L : sprTaxi2L), dx-3, dy-1);
+      else if (e.art === 'cart')
+        ctx.drawImage(e.vx > 0 ? (wheels ? sprCart1 : sprCart2) : (wheels ? sprCart1L : sprCart2L), dx-3, dy-2);
+      else
+        ctx.drawImage(e.vx > 0 ? (feet ? sprRat1 : sprRat2) : (feet ? sprRat1L : sprRat2L), dx-2, dy-1);
     } else if (e.type === 'b') {
-      ctx.drawImage(((e.t >> 3) & 1) ? sprEye1 : sprEye2, dx-1, dy);
-    } else if (e.type === 's') {
-      ctx.fillStyle = 'rgba(200,200,210,0.6)';                     // movers' rope
-      ctx.fillRect(dx + 5, e.ax - cy - 6, 1, dy - (e.ax - cy) + 8);
-      const f = (e.mode === 1 || e.mode === 3) ? ((e.t >> 2) & 1) : ((e.t >> 4) & 1);
-      ctx.drawImage(f ? sprSpider1 : sprSpider2, dx, dy);
-    } else if (e.type === 'g') {
-      const px = player.x + player.w/2;
-      const facingLeft = (e.x + e.w/2) > px;
-      if (e.shy) {   // spotted! freeze into the statue pose, innocent as bronze
-        ctx.globalAlpha = 0.96;
-        ctx.drawImage(facingLeft ? sprGhostFL : sprGhostF, dx-1, dy-1);
-      } else {
-        const f = (e.t >> 4) & 1;
-        ctx.globalAlpha = 0.9;
-        ctx.drawImage(facingLeft ? (f ? sprGhost1L : sprGhost2L) : (f ? sprGhost1 : sprGhost2), dx-1, dy-1);
-      }
-      ctx.globalAlpha = 1;
+      const f = (e.t >> 3) & 1;
+      ctx.drawImage(e.vx < -0.05 ? (f ? sprEye1L : sprEye2L) : (f ? sprEye1 : sprEye2), dx-2, dy-1);
     }
   }
 }
@@ -1988,14 +1938,20 @@ function drawPlayer() {
     ctx.beginPath(); ctx.arc(cx, cyw, 24 + Math.sin(frame*0.3)*3, 0, 7); ctx.fill();
     ctx.fillStyle = `rgba(255,255,255,${(0.10 + 0.06*Math.sin(frame*0.4)).toFixed(3)})`;
     ctx.beginPath(); ctx.arc(cx, cyw, 15, 0, 7); ctx.fill();
-  } else if (crossT > 0) {   // cool sunglasses aura
-    ctx.fillStyle = `rgba(143,211,255,${(0.08 + 0.05*Math.sin(frame*0.2)).toFixed(3)})`;
+  } else if (crossT > 0) {   // SPICY rapid-fire shimmer
+    ctx.fillStyle = `rgba(255,120,60,${(0.08 + 0.05*Math.sin(frame*0.2)).toFixed(3)})`;
     ctx.beginPath();
-    ctx.arc(Math.floor(player.x - camX) + 5, Math.floor(player.y - camY) + 7, 22, 0, 7);
+    ctx.arc(Math.floor(player.x - camX) + 5, Math.floor(player.y - camY) + 7, 20, 0, 7);
     ctx.fill();
   }
   if (isWolf && wolfT < 100 && (frame & 7) < 3) ctx.globalAlpha = 0.5;   // wearing off
-  ctx.drawImage(sp, Math.floor(player.x - camX) - (isWolf ? 5 : 3), Math.floor(player.y - camY) - 2);
+  // squash-and-stretch: wide on landing, tall while rising
+  const sw = sp.width, sh = sp.height;
+  let dw = sw, dh = sh;
+  if (player.sqT > 0)                      { dw = sw * 1.25; dh = sh * 0.82; }
+  else if (!player.onGround && player.vy < -1) { dw = sw * 0.88; dh = sh * 1.08; }
+  const px2 = Math.floor(player.x - camX) + player.w/2, feet = Math.floor(player.y - camY) + player.h;
+  ctx.drawImage(sp, Math.floor(px2 - dw/2), Math.floor(feet - dh), Math.floor(dw), Math.floor(dh));
   ctx.globalAlpha = 1;
 }
 
@@ -2008,9 +1964,22 @@ function drawFX() {
   ctx.globalAlpha = 1;
   for (const p of popups) {
     ctx.globalAlpha = 1 - p.t/45;
-    drawText(ctx, p.txt, Math.floor(p.x - camX - textW(p.txt)/2), Math.floor(p.y - camY - p.t*0.5), p.col);
+    const wob = Math.sin(p.t * 0.35) * 1.5;   // playful wiggle as it floats up
+    drawText(ctx, p.txt, Math.floor(p.x - camX - textW(p.txt)/2 + wob), Math.floor(p.y - camY - p.t*0.5), p.col);
   }
   ctx.globalAlpha = 1;
+  // Zarna's one-liner, hovering over her head for a beat
+  if (quip) {
+    quip.t++;
+    if (quip.t > 110) quip = null;
+    else {
+      ctx.globalAlpha = quip.t > 90 ? 1 - (quip.t - 90) / 20 : 1;
+      const qx = Math.floor(player.x + player.w/2 - camX);
+      const qy = Math.floor(player.y - camY) - 18 + Math.round(Math.sin(quip.t * 0.1) * 1.5);
+      drawTextO(ctx, quip.txt, Math.floor(qx - textW(quip.txt)/2), qy, '#fff6d0', 1, '#3a1a2e');
+      ctx.globalAlpha = 1;
+    }
+  }
 }
 
 function drawFog() {
@@ -2039,9 +2008,9 @@ function drawHUD() {
     barY += 8;
   }
   if (crossT > 0) {
-    drawText(ctx, 'COOL', 5, barY, '#8fd3ff');
-    ctx.fillStyle = '#3a3448'; ctx.fillRect(23, barY + 1, 30, 3);
-    ctx.fillStyle = '#8fd3ff'; ctx.fillRect(23, barY + 1, Math.ceil(30 * crossT / 600), 3);
+    drawText(ctx, 'SPICY', 5, barY, '#ff8a50');
+    ctx.fillStyle = '#3a3448'; ctx.fillRect(28, barY + 1, 30, 3);
+    ctx.fillStyle = '#ff8a50'; ctx.fillRect(28, barY + 1, Math.ceil(30 * crossT / 600), 3);
   }
   if (flashT > 0) {
     ctx.fillStyle = `rgba(232,100,28,${(flashT/6*0.22).toFixed(2)})`;
@@ -2102,7 +2071,7 @@ function drawTitle() {
   if (best > 0) drawTextC(ctx, 'BEST SCORE: ' + best, 120, '#ffd75e');
   ctx.drawImage(sprPlayer.idle, Math.floor(VW*0.12), 96);
   ctx.drawImage(sprLeah, VW - 44, 90);
-  ctx.drawImage(sprGhost1, VW - 70, 120);
+  ctx.drawImage(sprEye1, VW - 70, 120);
   ctx.drawImage(sprWolf.idle, 8, VH-40);
   ctx.drawImage(sprTaxi1L, Math.floor(VW*0.72), VH-22);
 }
@@ -2134,7 +2103,7 @@ function drawIntro() {
   const wheelsL = ((t >> 3) & 1) ? sprTaxi1L : sprTaxi2L;
   if (driving) {
     // family in the cab, heads peeking over the roofline, waving goodbye
-    ctx.drawImage(sprLeah, Math.floor(kx) + 5, taxiY - 9, 14, 20);
+    ctx.drawImage(sprLeah, Math.floor(kx) + 7, taxiY - 11, 14, 20);
     ctx.drawImage(wheels, Math.floor(kx), taxiY);
     if (((frame >> 3) & 1)) drawText(ctx, 'HURRY, ZARNA!', Math.floor(kx) - 8, taxiY - 24, '#e0359a');
   } else {
@@ -2343,6 +2312,8 @@ window.__dbg = {
   step(n = 1) { for (let i = 0; i < n; i++) tick(); render(); },
   resetRun() { resetRun(); },
   requestWolf() { pendingWolf = true; },
+  setCross(n = 600) { crossT = n; },
+  get grid() { return grid; },
   press: {
     primary() { input.any = true; },
     right(on = true) { touch.axis = on ? 1 : 0; },
