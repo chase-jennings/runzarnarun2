@@ -150,6 +150,46 @@ const cp = await page.evaluate(() => {
   return { hit: c.hit };
 });
 check('checkpoint registers', cp.hit);
+
+/* every one-way platform is within single-jump reach of the surface below it */
+const reach = await page.evaluate(() => {
+  // jump apex from engine constants: v^2 / 2g with JUMP_V 5.4, GRAV 0.28 => ~52px
+  const APEX = (5.4 * 5.4) / (2 * 0.28);
+  const g = window.__dbg.grid, COLS = g[0].length, ROWS = g.length, T = 16;
+  const bad = [];
+  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+    if (g[y][x] !== '-') continue;
+    // find the nearest standable surface below within a small horizontal window
+    let ok = false;
+    for (let xx = Math.max(0, x-2); xx <= Math.min(COLS-1, x+2) && !ok; xx++) {
+      for (let yy = y+1; yy < ROWS; yy++) {
+        const ch = g[yy][xx];
+        if (ch === '-' || ch === '#' || ch === 'B' || ch === '?' || ch === 'D') {
+          if ((yy - y) * T <= APEX + 4) ok = true;
+          break;
+        }
+      }
+    }
+    if (!ok) bad.push(x + ',' + y);
+  }
+  return bad;
+});
+check('all platforms within single-jump reach', reach.length === 0, `bad=${reach.join(' ')}`);
+
+/* SPICY mode: samosa cooldown drops while crossT active */
+const spicy = await page.evaluate(() => {
+  window.__dbg.resetRun(); window.__dbg.state = 'play';
+  const h = window.__dbg.hero;
+  h.x = 2*16; h.y = 8*16; h.vx = 0; h.vy = 0; h.dir = 1; h.inv = 99999;
+  window.__dbg.step(10);
+  window.__dbg.setCross(600);
+  window.__dbg.press.fire(true);
+  window.__dbg.step(30);
+  const rapid = window.__dbg.fireballs.length;
+  window.__dbg.press.fire(false);
+  return rapid;
+});
+check('SPICY mode rapid-fires samosas (>=4 in 30 frames)', spicy >= 4, `count=${spicy}`);
 await page.screenshot({ path: path.join(SHOT, 'reskin-06-checkpoint.png') });
 
 /* forced game over on cones/spikes */
@@ -158,7 +198,7 @@ const go = await page.evaluate(() => {
   window.__dbg.score = 4200;
   window.__dbg.hearts = 1;
   const h = window.__dbg.hero;
-  h.x = 66*16; h.y = 138; h.vx = 0; h.vy = 0; h.inv = 0;
+  h.x = 84*16; h.y = 138; h.vx = 0; h.vy = 0; h.inv = 0;   // stand on the traffic cones
   for (let i=0;i<160;i++){ window.__dbg.step(1); if (window.__dbg.state==='gameover') break; }
   return { state: window.__dbg.state, score: window.__dbg.score };
 });
