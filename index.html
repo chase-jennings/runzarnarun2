@@ -661,6 +661,105 @@ const sprEye2 = makeSprite([
 ".................."], P_EYE, 18);
 const sprEye1L = flipSprite(sprEye1), sprEye2L = flipSprite(sprEye2);
 
+// THE BOUNCER — huge doorman, bald, dark shades, black STAFF tee,
+// arms crossed, orange wristbands. 30 wide, faces the player.
+const P_BOSS = { K:'#141018', F:'#c08048', s:'#9a6034', E:'#101018',
+                 S:'#20222c', d:'#33353f', G:'#3a3d46', g:'#2a2d34',
+                 O:'#f0902a', o:'#c06a10', W:'#eceaf4' };
+const sprBoss1 = makeSprite([
+"............KKKKKK............",
+"..........KKKKKKKKKK..........",
+".........KKKKKKKKKKKK.........",
+".........KFFFFFFFFFFK.........",
+".........FFFFFFFFFFFF.........",
+"........FFFFFFFFFFFFFF........",
+"........KKKKKKKKKKKKKK........",
+"........KWKKKKKKKKKKWK........",
+"........FFFFFFFFFFFFFF........",
+".........FFFFFFFFFFFF.........",
+"..........FFFFFFFFFF..........",
+"...........FFFFFFFF...........",
+".......SSSSSSSSSSSSSSSS.......",
+"......SSSSSSSSSSSSSSSSSS......",
+".....SSSSSSSSSSSSSSSSSSSS.....",
+"....FFSSSSSSSSSSSSSSSSSSFF....",
+"...OFFFFFFFFFFFFFFFFFFFFFFO...",
+"...OFFFFFFFFFFFFFFFFFFFFFFO...",
+"....FFFFFFFFFFFFFFFFFFFFFF....",
+"....sFFFFFFFFFFFFFFFFFFFFs....",
+"....SSSSSSSSSSSSSSSSSSSSSS....",
+"....SSSSSSSSSWWWWSSSSSSSSS....",
+"....SSSSSSSSSWKKWSSSSSSSSS....",
+"....SSSSSSSSSWWWWSSSSSSSSS....",
+"....SSSSSSSSSSSSSSSSSSSSSS....",
+".....SSSSSSSSSSSSSSSSSSSS.....",
+"......GGGGGGGGGGGGGGGGGG......",
+"......GGGGGGGGGGGGGGGGGG......",
+"......GGGGGGGG..GGGGGGGG......",
+"......GGGGGGGG..GGGGGGGG......",
+"......GGGGGGGG..GGGGGGGG......",
+"......GGGGGGGG..GGGGGGGG......",
+"......gggggggg..gggggggg......",
+"......KKKKKKKK..KKKKKKKK......",
+".....KKKKKKKKK..KKKKKKKKK....."], P_BOSS, 30);
+const sprBoss2 = makeSprite([
+"............KKKKKK......OO....",
+"..........KKKKKKKKKK...OFFO...",
+".........KKKKKKKKKKKK..OFFO...",
+".........KFFFFFFFFFFK...FF....",
+".........FFFFFFFFFFFF...FF....",
+"........FFFFFFFFFFFFFF.sFF....",
+"........KKKKKKKKKKKKKKsFF.....",
+"........KWKKKKKKKKKKWKFF......",
+"........FFFFFFFFFFFFFF........",
+".........FFFFFFFFFFFF.........",
+"..........FFFFFFFFFF..........",
+"...........FFFFFFFF...........",
+".......SSSSSSSSSSSSSSSS.......",
+"......SSSSSSSSSSSSSSSSSS......",
+".....SSSSSSSSSSSSSSSSSSSS.....",
+"....FFSSSSSSSSSSSSSSSSSSSS....",
+"...OFFFFFFFFFFFFFFFFFFFSSS....",
+"...OFFFFFFFFFFFFFFFFFFFFSS....",
+"....FFFFFFFFFFFFFFFFFFFFFF....",
+"....sFFFFFFFFFFFFFFFFFFFFs....",
+"....SSSSSSSSSSSSSSSSSSSSSS....",
+"....SSSSSSSSSWWWWSSSSSSSSS....",
+"....SSSSSSSSSWKKWSSSSSSSSS....",
+"....SSSSSSSSSWWWWSSSSSSSSS....",
+"....SSSSSSSSSSSSSSSSSSSSSS....",
+".....SSSSSSSSSSSSSSSSSSSS.....",
+"......GGGGGGGGGGGGGGGGGG......",
+"......GGGGGGGGGGGGGGGGGG......",
+"......GGGGGGGG..GGGGGGGG......",
+"......GGGGGGGG..GGGGGGGG......",
+"......GGGGGGGG..GGGGGGGG......",
+"......GGGGGGGG..GGGGGGGG......",
+"......gggggggg..gggggggg......",
+"......KKKKKKKK..KKKKKKKK......",
+".....KKKKKKKKK..KKKKKKKKK....."], P_BOSS, 30);
+// solid-colour silhouettes of the boss (for damage-red + hit-flash overlays)
+function tintSprite(spr, color) {
+  const cv = document.createElement('canvas'); cv.width = spr.width; cv.height = spr.height;
+  const c = cv.getContext('2d');
+  c.drawImage(spr, 0, 0);
+  c.globalCompositeOperation = 'source-atop';
+  c.fillStyle = color; c.fillRect(0, 0, cv.width, cv.height);
+  return cv;
+}
+const sprBossRed = tintSprite(sprBoss1, '#e02020');
+const sprBossWhite = tintSprite(sprBoss1, '#ffffff');
+// little orange wristband projectile, 8x8
+const sprBand = makeSprite([
+"..OOOO..",
+".O.oo.O.",
+"O.o..o.O",
+"O.o..o.O",
+"O.o..o.O",
+"O.o..o.O",
+".O.oo.O.",
+"..OOOO.."], { O:'#f08a2a', o:'#ffca8a' }, 8);
+
 // pineapple collectible: green spiky top, golden cross-hatched body
 const P_CANDLE = { G:'#4aa83c', g:'#2f7a26', Y:'#f0b028', o:'#b87818' };
 const sprCandle1 = makeSprite([
@@ -931,10 +1030,10 @@ function makeLantern(lit) {
 const sprLanternOff = makeLantern(false), sprLanternOn = makeLantern(true);
 
 //------------------------------------------------ level
-const COLS = 240, ROWS = 12;
+const COLS = 276, ROWS = 12;
 let grid;
 const enemies = [], candles = [], decor = [], checkpoints = [], powerups = [];
-let doorRect = null, leah = null;
+let doorRect = null, leah = null, bossGate = null, bossDefeated = false, hasBoss = false;
 
 function set(x, y, ch) { if (x>=0 && x<COLS && y>=0 && y<ROWS) grid[y][x] = ch; }
 function ground(x0, x1) { for (let x=x0; x<=x1; x++) { set(x,10,'#'); set(x,11,'D'); } }
@@ -946,6 +1045,7 @@ function rat(x)  { enemies.push({type:'z', art:'rat',  x:x*TILE, y:10*TILE-8,  w
 function taxi(x) { enemies.push({type:'z', art:'taxi', x:x*TILE, y:10*TILE-13, w:26, h:13, vx:-0.55, vy:0, dead:0, t:0, sx:x*TILE}); }
 function hotcart(x) { enemies.push({type:'z', art:'cart', x:x*TILE, y:10*TILE-16, w:22, h:16, vx:-0.5, vy:0, dead:0, t:0, sx:x*TILE}); }
 function bat(x, y) { enemies.push({type:'b', x:x*TILE, y:y*TILE, w:14, h:9, vx:0, vy:0, dead:0, t:0, mode:0, sx:x*TILE, sy:y*TILE}); }
+function boss(x) { enemies.push({type:'boss', x:x*TILE, y:10*TILE-44, w:28, h:44, hp:15, maxhp:15, dead:0, t:0, hitFlash:0, windup:0, throwCd:120, recoil:0}); hasBoss = true; }
 function tomb(x, v) { decor.push({t: v ? 'tomb2':'tomb', x:x*TILE, y:9*TILE}); }
 function tree(x) { decor.push({t:'tree', x:x*TILE, y:9*TILE-32}); }
 function bill(x, k) { decor.push({t:'bill'+k, x:x*TILE, y:26}); }
@@ -958,6 +1058,7 @@ function buildLevel() {
   enemies.length = 0; candles.length = 0; decor.length = 0;
   checkpoints.length = 0; powerups.length = 0;
   seenTags = {}; quip = null;
+  bossGate = null; bossDefeated = false; hasBoss = false; bossShots.length = 0;
 
   // ============ ACT 1 · THE BROWNSTONE BLOCK — home turf, learn the ropes
   ground(0, 21);
@@ -1025,16 +1126,24 @@ function buildLevel() {
   candle(187, 8); candle(195, 8);
   checkpoint(204);
 
-  // ============ ACT 4 · THE STAGE DOOR — family in sight!
-  ground(208, 239);
-  fill(209, 2, 239, 2, 'B');                     // theater awning overhead
-  fill(232, 3, 239, 9, 'B');                     // theater wall past the door
+  // ============ ACT 4 · THE STAGE DOOR — one last run to the boss
+  ground(208, 275);
+  fill(209, 2, 275, 2, 'B');                     // theater awning overhead the whole stretch
   tree(212); tomb(216, 1);
-  rat(219); taxi(224);
+  rat(219); taxi(224); rat(233); bat(230, 3);
   candle(210, 8); candle(211, 8); candle(214, 8); candle(221, 8); candle(222, 8);
-  pow('heart', 226, 8);
-  doorRect = { x: 228*TILE, y: 8*TILE, w: 32, h: 32 };
-  leah = { x: 227*TILE + 2, y: 136, saved: false };   // the family, waiting at the stage door
+  candle(234, 8); candle(235, 8);
+  pow('heart', 240, 8);                          // top up before the fight
+  sign(246, 'STAGE DOOR');
+
+  // -- THE BOUNCER blocks the door; beat him to open it
+  boss(255);
+  bossGate = { x0: 263, x1: 264, y0: 3, y1: 9 };
+  fill(bossGate.x0, bossGate.y0, bossGate.x1, bossGate.y1, 'B');   // closed stage doors
+  fill(272, 3, 275, 9, 'B');                     // theater wall past the door
+
+  doorRect = { x: 266*TILE, y: 8*TILE, w: 32, h: 32 };
+  leah = { x: 268*TILE, y: 136, saved: false };  // family — revealed once the bouncer's beaten
 }
 function tileAt(tx, ty) {
   if (tx < 0 || tx >= COLS) return '#';
@@ -1317,6 +1426,7 @@ let fireballs = [], fireCD = 0;
 let tutT = 0;
 let camX = 0, camY = LEVEL_H - VH;
 let particles = [], popups = [], risers = [];
+let bossShots = [];
 let shake = 0, flashT = 0, lightT = 0;
 let frame = 0;
 let dbgPaused = false;   // test hook: when true, the rAF loop stops auto-stepping
@@ -1598,8 +1708,9 @@ function updatePlayer() {
     }
   }
 
-  // reach Leah at the crypt door → rescue!
-  if (player.x + player.w > leah.x - 28 && player.x < leah.x + 44 && player.y + player.h > leah.y) {
+  // reach the family at the stage door → reunion! (only after the bouncer's beaten)
+  if ((bossDefeated || !hasBoss) &&
+      player.x + player.w > leah.x - 28 && player.x < leah.x + 44 && player.y + player.h > leah.y) {
     leah.saved = true;
     state = 'photo'; stateT = 0;
     score += hearts * 500;
@@ -1653,6 +1764,8 @@ function updateEnemies() {
       }
     }
 
+    else if (e.type === 'boss') { updateBoss(e); continue; }   // boss never stomped/insta-killed
+
     // player collision
     if (state === 'play' &&
         player.x < e.x + e.w && player.x + player.w > e.x &&
@@ -1683,6 +1796,56 @@ function updateEnemies() {
   }
 }
 
+function updateBoss(e) {
+  if (e.hitFlash > 0) e.hitFlash--;
+  if (e.recoil > 0) e.recoil--;
+  if (e.windup > 0) { e.windup--; if (e.windup === 0) throwBand(e); }
+  const pcx = player.x + player.w/2;
+  const near = Math.abs(pcx - (e.x + e.w/2)) < VW * 0.75;
+  if (state === 'play' && near && e.windup === 0) {
+    if (e.throwCd > 0) e.throwCd--;
+    else { e.windup = 26; e.throwCd = 150 + Math.floor(Math.random() * 50); }   // telegraph, then throw
+  }
+  // contact costs a heart — but never while invincible, and it never kills him
+  if (state === 'play' && player.inv <= 0 && wolfT <= 0 &&
+      player.x < e.x + e.w && player.x + player.w > e.x &&
+      player.y < e.y + e.h && player.y + player.h > e.y) {
+    hurt(e.x + e.w/2);
+  }
+}
+function throwBand(e) {
+  const dir = (player.x < e.x) ? -1 : 1;
+  bossShots.push({ x: e.x + (dir < 0 ? 0 : e.w - 8), y: e.y + 14, vx: dir * 1.7, vy: -2.5, t: 0 });
+  tone(320, 180, 0.09, 'square', 0.06); noise(0.04, 0.02);
+}
+function updateBossShots() {
+  for (let i = bossShots.length - 1; i >= 0; i--) {
+    const s = bossShots[i];
+    s.t++; s.vy = Math.min(s.vy + 0.16, 4); s.x += s.vx; s.y += s.vy;
+    const onFloor = isSolid(tileAt(Math.floor((s.x + 4) / TILE), Math.floor((s.y + 8) / TILE)));
+    if (s.t > 220 || s.x < camX - 40 || s.x > camX + VW + 40 || onFloor) {
+      if (onFloor) poof(s.x + 4, s.y + 7, '#f08a2a', 3);
+      bossShots.splice(i, 1); continue;
+    }
+    if (state === 'play' && player.inv <= 0 && wolfT <= 0 &&
+        player.x < s.x + 8 && player.x + player.w > s.x &&
+        player.y < s.y + 8 && player.y + player.h > s.y) {
+      hurt(s.x); bossShots.splice(i, 1);
+    }
+  }
+}
+function defeatBoss(e) {
+  e.dead = 1; bossDefeated = true;
+  if (bossGate) for (let y = bossGate.y0; y <= bossGate.y1; y++)
+    for (let x = bossGate.x0; x <= bossGate.x1; x++) set(x, y, '.');   // stage doors swing open
+  score += 1000;
+  addPop(e.x + e.w/2, e.y - 6, '+1000!', '#ffe27a');
+  for (let i = 0; i < 26; i++) confetti(e.x + Math.random()*e.w, e.y + Math.random()*e.h);
+  for (let i = 0; i < 6; i++) particles.push({ x:e.x+e.w/2, y:e.y+12, vx:(Math.random()-0.5)*3.5, vy:-Math.random()*3-1, t:0, life:44, col:'#f08a2a' });
+  sayQuip('OKAY OKAY, GO ON IN!');
+  SFX.win();
+}
+
 function updateFireballs() {
   fireballs = fireballs.filter(fb => {
     fb.t++;
@@ -1705,6 +1868,15 @@ function updateFireballs() {
     for (const e of enemies) {
       if (e.dead) continue;
       if (fb.x < e.x + e.w && fb.x + 6 > e.x && fb.y < e.y + e.h && fb.y + 6 > e.y) {
+        if (e.type === 'boss') {                       // the bouncer: 15 samosa hits
+          e.hp--; e.hitFlash = 8; e.recoil = 6; e.windup = 0;
+          score += 50;
+          poof(fb.x + 3, fb.y + 3, '#ff8c28', 8);
+          addPop(e.x + e.w/2, e.y - 4, e.hp > 0 ? e.hp + ' LEFT' : 'OW!', '#ffd75e');
+          SFX.sizzle();
+          if (e.hp <= 0) defeatBoss(e);
+          return false;
+        }
         e.dead = 1;
         score += 200;
         addPop(e.x, e.y - 8, laughWord(), '#ffe27a');
@@ -1936,14 +2108,17 @@ function drawDecor() {
     ctx.fillStyle = `rgba(255,215,94,${(0.10 + 0.06*Math.sin(frame*0.08)).toFixed(3)})`;
     ctx.beginPath(); ctx.arc(dd+16, doorRect.y - cy + 18, 22, 0, 7); ctx.fill();
   }
-  // Zarna's family — Shalabh, Veer, Brij and Zoya — waiting at the stage door
-  if (state === 'play' || state === 'dying') {
+  // Zarna's family — revealed only once the bouncer is beaten
+  if ((state === 'play' || state === 'dying') && (bossDefeated || !hasBoss)) {
     const lx = Math.floor(leah.x - camX);
     if (lx > -90 && lx < VW + 90) {
       const fy = 10*TILE - FAM[0].height - cy;
-      ctx.fillStyle = 'rgba(255,236,150,0.12)';
+      const rise = bossDefeated ? Math.min(1, (frame - (leah.revealF||(leah.revealF=frame))) / 24) : 1;
+      ctx.globalAlpha = rise;
+      ctx.fillStyle = 'rgba(255,236,150,0.14)';
       ctx.beginPath(); ctx.arc(lx + 8, leah.y - cy + 8, 34 + Math.sin(frame*0.1)*2, 0, 7); ctx.fill();
       drawFamily(lx - 24, fy, { flip: true });
+      ctx.globalAlpha = 1;
       if (((frame >> 5) & 1) && Math.abs(player.x - leah.x) > 70)
         drawText(ctx, 'ZARNA!', lx - 4, fy - 10, '#e0359a');
     }
@@ -2032,7 +2207,22 @@ function drawEnemies() {
     } else if (e.type === 'b') {
       const f = (e.t >> 3) & 1;
       ctx.drawImage(e.vx < -0.05 ? (f ? sprEye1L : sprEye2L) : (f ? sprEye1 : sprEye2), dx-2, dy-1);
+    } else if (e.type === 'boss') {
+      const kick = e.recoil > 0 ? 2 : 0;           // flinch back when hit
+      const bx = dx + Math.floor((e.w - sprBoss1.width) / 2) + kick;
+      const by = dy + e.h - sprBoss1.height + (Math.sin(e.t*0.06) < -0.5 ? 1 : 0);
+      const spr = (e.windup > 0 && (e.windup & 2)) ? sprBoss2 : sprBoss1;
+      ctx.drawImage(spr, bx, by);
+      const redAmt = (1 - e.hp/e.maxhp) * 0.55;    // reddens as he takes damage
+      if (redAmt > 0.01) { ctx.globalAlpha = redAmt; ctx.drawImage(sprBossRed, bx, by); ctx.globalAlpha = 1; }
+      if (e.hitFlash > 0 && (e.hitFlash & 1)) { ctx.globalAlpha = 0.5; ctx.drawImage(sprBossWhite, bx, by); ctx.globalAlpha = 1; }
     }
+  }
+  // orange wristbands mid-flight
+  for (const s of bossShots) {
+    const sx = Math.floor(s.x - camX), sy = Math.floor(s.y - camY);
+    if (sx < -12 || sx > VW + 12) continue;
+    ctx.drawImage(sprBand, sx, sy);
   }
 }
 
@@ -2129,6 +2319,16 @@ function drawHUD() {
   if (flashT > 0) {
     ctx.fillStyle = `rgba(232,100,28,${(flashT/6*0.22).toFixed(2)})`;
     ctx.fillRect(0, 0, VW, VH);
+  }
+  // boss health bar — shown while the bouncer is alive and on-screen
+  const bz = enemies.find(e => e.type === 'boss' && !e.dead);
+  if (bz && bz.x < camX + VW + 40 && bz.x + bz.w > camX - 40) {
+    const bw = 90, bxp = Math.floor((VW - bw) / 2), byp = 20;
+    drawTextCO(ctx, 'THE BOUNCER', 11, '#ff5a5a');
+    ctx.fillStyle = '#1a1420'; ctx.fillRect(bxp - 1, byp - 1, bw + 2, 6);
+    ctx.fillStyle = '#3a2a2a'; ctx.fillRect(bxp, byp, bw, 4);
+    ctx.fillStyle = '#e83a3a'; ctx.fillRect(bxp, byp, Math.ceil(bw * bz.hp / bz.maxhp), 4);
+    ctx.fillStyle = '#ff8a8a'; ctx.fillRect(bxp, byp, Math.ceil(bw * bz.hp / bz.maxhp), 1);
   }
 }
 
@@ -2322,6 +2522,7 @@ function tick() {
     updatePlayer();
     updateFireballs();
     updateEnemies();
+    updateBossShots();
     updateFX();
     // camera
     const target = player.x + player.w/2 - VW*0.4;
@@ -2428,6 +2629,10 @@ window.__dbg = {
   requestWolf() { pendingWolf = true; },
   setCross(n = 600) { crossT = n; },
   get grid() { return grid; },
+  get boss() { return enemies.find(e => e.type === 'boss'); },
+  get bossDefeated() { return bossDefeated; },
+  get bossShots() { return bossShots; },
+  killBoss() { const b = enemies.find(e => e.type === 'boss' && !e.dead); if (b) { b.hp = 0; defeatBoss(b); } },
   press: {
     primary() { input.any = true; },
     right(on = true) { touch.axis = on ? 1 : 0; },
