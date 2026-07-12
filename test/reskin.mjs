@@ -198,7 +198,7 @@ const go = await page.evaluate(() => {
   window.__dbg.score = 4200;
   window.__dbg.hearts = 1;
   const h = window.__dbg.hero;
-  h.x = 84*16; h.y = 138; h.vx = 0; h.vy = 0; h.inv = 0;   // stand on the traffic cones
+  h.x = 22*16 + 6; h.y = 8*16; h.vx = 0; h.vy = 0; h.inv = 0;   // drop into the sidewalk gap
   for (let i=0;i<160;i++){ window.__dbg.step(1); if (window.__dbg.state==='gameover') break; }
   return { state: window.__dbg.state, score: window.__dbg.score };
 });

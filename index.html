@@ -376,37 +376,145 @@ const sprCross = makeSprite([
 "....RRRR....",
 ".....RR....."], { R:'#e0402a', W:'#ff8a70', g:'#3f8a34' }, 12);
 
-// Zarna's family waiting at the theater: husband in a blue suit (center)
-// flanked by two happy kids. 16x24 — same footprint as the original captive.
-const P_LEAH = { H:'#20140c', F:'#c98a5e', f:'#a86e46', E:'#20140c', M:'#8c3a2a',
-                 B:'#2a4a7a', b:'#1e3358', S:'#e0359a', s:'#b02878',
-                 G:'#ffd75e', W:'#f4f0f6' };
-const sprLeah = makeSprite([
+// Zarna's family, four distinct people at Zarna scale (16x28 each):
+// Shalabh (husband: bald, navy suit, pink shirt, brown shoes),
+// Veer (short curls, royal blue shirt, khakis, white sneakers),
+// Brij (curly hair, light pink shirt, khakis, sneakers),
+// Zoya (long black hair, light blue top, cream pants).
+const P_FAM = { F:'#c98a5e', f:'#a86e46', E:'#20140c', M:'#8c3a2a',
+                H:'#1a1a22', h:'#3a3a4a',
+                N:'#24356b', n:'#18244a', P:'#f4c2ce', p:'#d99aae',
+                R:'#2a52c9', r:'#1d3b96', K:'#c8b48a', k:'#a8946a',
+                C:'#efe6d2', c:'#cfc2a4', L:'#9fd1ee', l:'#7ab2d4',
+                W:'#f4f0f6', w:'#c8c4d4', B:'#6b4a2a', b:'#4a3016' };
+const sprShal = makeSprite([
 "................",
+"................",
+".....FFFF.......",
+"....FFFFFF......",
+"....FFFFFF......",
+"....FEFFEF......",
+"....FFFFFF......",
+"....FFMMFF......",
+".....FFFF.......",
+"....NNPPNN......",
+"...NNNPPNNN.....",
+"..NNNNPPNNNN....",
+"..NnNNPPNNnN....",
+"..NnNNppNNnN....",
+"..FFNNNNNNFF....",
+"...NNNNNNNN.....",
+"...NNNNNNNN.....",
+"...nNNNNNNn.....",
+"...NNN..NNN.....",
+"...NNN..NNN.....",
+"...NNN..NNN.....",
+"...NNN..NNN.....",
+"...NNN..NNN.....",
+"...nnn..nnn.....",
+"...nnn..nnn.....",
+"...BBB..BBB.....",
+"..BBBB..BBBB....",
+"..bbbb..bbbb...."], P_FAM);
+const sprVeer = makeSprite([
 ".....HHHH.......",
 "....HHHHHH......",
-"....HFFFFH......",
+"....HhHHhH......",
+"....HHHHHH......",
+"....FFFFFF......",
 "....FEFFEF......",
-"....FFFMFF......",
+"....FFFFFF......",
+"....FFMMFF......",
 ".....FFFF.......",
-"....WWBBWW......",
-"...BBBWWBBB.....",
-"...BBBWWBBB.....",
-"..BBBBWWBBBB....",
-"..BBBGWWGBBB....",
-"..BBBBBBBBBB....",
-"..BBBBBBBBBB....",
-".HHHH..BB..HHHH.",
-".HFFH..BB..HFFH.",
-".FEEF..BB..FEEF.",
-".FMMF..BB..FMMF.",
-".sSSs..BB..GSSG.",
-".SSSS..BB..SSSS.",
-".SSSS..BB..SSSS.",
-".F.F...BB...F.F.",
-".W.W...WW...W.W.",
-"................"], P_LEAH);
-const sprLeahL = flipSprite(sprLeah);
+"....RRRRRR......",
+"...RRRRRRRR.....",
+"..RRRRRRRRRR....",
+"..RrRRRRRRrR....",
+"..RrRRRRRRrR....",
+"..FFRRRRRRFF....",
+"...RRRRRRRR.....",
+"...rRRRRRRr.....",
+"...KKKKKKKK.....",
+"...KKK..KKK.....",
+"...KKK..KKK.....",
+"...KKK..KKK.....",
+"...KKK..KKK.....",
+"...KKK..KKK.....",
+"...kkk..kkk.....",
+"...kkk..kkk.....",
+"...WWW..WWW.....",
+"..WWWW..WWWW....",
+"..wwww..wwww...."], P_FAM);
+const sprBrij = makeSprite([
+"....HHHHHH......",
+"...HHHHHHHH.....",
+"...HhHHHHhH.....",
+"...HHHHHHHH.....",
+"....FFFFFF......",
+"....FEFFEF......",
+"....FFFFFF......",
+"....FFMMFF......",
+".....FFFF.......",
+"....PPPPPP......",
+"...PPPPPPPP.....",
+"..PPPPPPPPPP....",
+"..PpPPPPPPpP....",
+"..PpPPPPPPpP....",
+"..FFPPPPPPFF....",
+"...PPPPPPPP.....",
+"...pPPPPPPp.....",
+"...KKKKKKKK.....",
+"...KKK..KKK.....",
+"...KKK..KKK.....",
+"...KKK..KKK.....",
+"...KKK..KKK.....",
+"...KKK..KKK.....",
+"...kkk..kkk.....",
+"...kkk..kkk.....",
+"...WWW..WWW.....",
+"..WWWW..WWWW....",
+"..wwww..wwww...."], P_FAM);
+const sprZoya = makeSprite([
+".....HHHH.......",
+"....HHHHHH......",
+"...HHHHHHHH.....",
+"...HhFFFFHH.....",
+"...HFFFFFFH.....",
+"...HFEFFEFH.....",
+"...HFFFFFFH.....",
+"...HFFMMFFH.....",
+"...HHFFFFHH.....",
+"...HLLLLLLH.....",
+"..HHLLLLLLHH....",
+"..HLLLLLLLLH....",
+"..HLLLLLLLLH....",
+"..HLLLLLLLLH....",
+"..FFLLLLLLFF....",
+"...LLLLLLLL.....",
+"...lLLLLLLl.....",
+"...CCCCCCCC.....",
+"...CCC..CCC.....",
+"...CCC..CCC.....",
+"...CCC..CCC.....",
+"...CCC..CCC.....",
+"...CCC..CCC.....",
+"...ccc..ccc.....",
+"...ccc..ccc.....",
+"...WWW..WWW.....",
+"..WWWW..WWWW....",
+"..wwww..wwww...."], P_FAM);
+const FAM = [sprShal, sprVeer, sprBrij, sprZoya];
+const FAML = FAM.map(flipSprite);
+// draws the whole family in a line, each with their own idle bob
+function drawFamily(x, y, opts = {}) {
+  const s = opts.scale || 1, flip = !!opts.flip, bob = opts.bob !== false;
+  for (let i = 0; i < 4; i++) {
+    const sp = flip ? FAML[i] : FAM[i];
+    const b = bob ? (Math.sin(frame * 0.08 + i * 1.4) < -0.55 ? 1 : 0) : 0;
+    ctx.drawImage(sp, Math.floor(x + i * 15 * s), Math.floor(y + b),
+                  Math.ceil(sp.width * s), Math.ceil(sp.height * s));
+  }
+}
 
 // samosa projectile, 8x8, two flicker frames (golden-brown triangle)
 const P_FIRE = { O:'#d99a3c', o:'#a86e28', Y:'#ffe0a0', R:'#8a5620', W:'#fff0c8' };
@@ -635,68 +743,76 @@ function makeTile(fn) {
   fn(cv.getContext('2d'));
   return cv;
 }
-const tGround = makeTile(c => {
-  // grey NYC sidewalk / asphalt
-  c.fillStyle = '#8a8d94'; c.fillRect(0,0,16,16);
-  c.fillStyle = '#a4a7ae'; c.fillRect(0,0,16,2);        // sunlit top edge
-  c.fillStyle = '#6e7178'; c.fillRect(0,2,16,1);        // curb shadow
-  c.fillStyle = '#727579';                              // slab seams
-  c.fillRect(0,15,16,1); c.fillRect(7,3,1,12);
-  c.fillStyle = '#7c7f86'; c.fillRect(2,6,3,1); c.fillRect(10,10,3,1);   // faint cracks
-  c.fillStyle = '#9a9da4'; c.fillRect(11,5,2,2); c.fillRect(3,11,2,2);   // flecks
-});
-const tDirt = makeTile(c => {
-  c.fillStyle = '#3a3d44'; c.fillRect(0,0,16,16);       // asphalt base under
-  c.fillStyle = '#44474e';
-  c.fillRect(2,1,5,4); c.fillRect(10,6,5,4); c.fillRect(1,10,5,4);
-  c.fillStyle = '#2e3138';
-  c.fillRect(8,2,4,3); c.fillRect(3,7,4,2); c.fillRect(9,12,5,3);
-});
-const tBrick = makeTile(c => {
-  // warm brownstone brick
-  c.fillStyle = '#8a4b32'; c.fillRect(0,0,16,16);
-  c.fillStyle = '#4a2416';
-  c.fillRect(0,0,16,1); c.fillRect(0,7,16,1); c.fillRect(0,15,16,1);
-  c.fillRect(7,1,1,6); c.fillRect(3,8,1,7); c.fillRect(12,8,1,7);
-  c.fillStyle = '#a86048';
-  c.fillRect(1,1,5,1); c.fillRect(9,1,6,1); c.fillRect(1,8,1,6);
-});
-const tSkullBlock = makeTile(c => {
-  // golden ? crate
-  c.fillStyle = '#e0a828'; c.fillRect(0,0,16,16);
-  c.fillStyle = '#b8801c'; c.fillRect(0,15,16,1); c.fillRect(15,0,1,16);
-  c.fillStyle = '#ffd75e'; c.fillRect(0,0,16,1); c.fillRect(0,0,1,16);
-  c.fillStyle = '#8a5e14';                          // corner rivets
-  c.fillRect(2,2,1,1); c.fillRect(13,2,1,1); c.fillRect(2,13,1,1); c.fillRect(13,13,1,1);
-  c.fillStyle = '#7a4e10';                          // question mark
-  c.fillRect(6,4,4,1); c.fillRect(9,5,1,2); c.fillRect(7,7,3,1);
-  c.fillRect(7,8,1,2); c.fillRect(7,12,1,1);
-});
-const tUsedBlock = makeTile(c => {
-  c.fillStyle = '#a07040'; c.fillRect(0,0,16,16);   // spent crate
-  c.fillStyle = '#7a5230'; c.fillRect(0,15,16,1); c.fillRect(15,0,1,16);
-  c.fillStyle = '#c08a58'; c.fillRect(0,0,16,1); c.fillRect(0,0,1,16);
-  c.fillStyle = '#7a5230'; c.fillRect(6,6,4,4);
-});
-const tPlatform = makeTile(c => {
-  c.fillStyle = '#c08a3c'; c.fillRect(0,2,16,4);   // wooden scaffold plank
-  c.fillStyle = '#e0b060'; c.fillRect(0,2,16,1);
-  c.fillStyle = '#8a5e28'; c.fillRect(0,5,16,1);
-  c.fillStyle = '#e0b060'; c.fillRect(0,1,3,1); c.fillRect(13,1,3,1);
-  c.fillRect(0,6,3,1); c.fillRect(13,6,3,1);        // bolt caps
-});
-const tSpike = makeTile(c => {
-  // orange traffic cones (same jumpable hazard collision)
-  for (let i = 0; i < 3; i++) {
-    const bx = i*5 + 1;
-    c.fillStyle = '#e8641c';
-    c.beginPath();
-    c.moveTo(bx+2, 6); c.lineTo(bx, 16); c.lineTo(bx+4, 16);
-    c.closePath(); c.fill();
-    c.fillStyle = '#f4f0f0'; c.fillRect(bx+1, 11, 2, 2);   // reflective stripe
-    c.fillStyle = '#c04810'; c.fillRect(bx-1, 15, 6, 1);   // base
-  }
-});
+// one tileset per level: streets, sewer, backstage
+function makeTilesStreet() {
+  const ground = makeTile(c => {
+    // grey NYC sidewalk / asphalt
+    c.fillStyle = '#8a8d94'; c.fillRect(0,0,16,16);
+    c.fillStyle = '#a4a7ae'; c.fillRect(0,0,16,2);        // sunlit top edge
+    c.fillStyle = '#6e7178'; c.fillRect(0,2,16,1);        // curb shadow
+    c.fillStyle = '#727579';                              // slab seams
+    c.fillRect(0,15,16,1); c.fillRect(7,3,1,12);
+    c.fillStyle = '#7c7f86'; c.fillRect(2,6,3,1); c.fillRect(10,10,3,1);   // faint cracks
+    c.fillStyle = '#9a9da4'; c.fillRect(11,5,2,2); c.fillRect(3,11,2,2);   // flecks
+  });
+  const dirt = makeTile(c => {
+    c.fillStyle = '#3a3d44'; c.fillRect(0,0,16,16);       // asphalt base under
+    c.fillStyle = '#44474e';
+    c.fillRect(2,1,5,4); c.fillRect(10,6,5,4); c.fillRect(1,10,5,4);
+    c.fillStyle = '#2e3138';
+    c.fillRect(8,2,4,3); c.fillRect(3,7,4,2); c.fillRect(9,12,5,3);
+  });
+  const brick = makeTile(c => {
+    // warm brownstone brick
+    c.fillStyle = '#8a4b32'; c.fillRect(0,0,16,16);
+    c.fillStyle = '#4a2416';
+    c.fillRect(0,0,16,1); c.fillRect(0,7,16,1); c.fillRect(0,15,16,1);
+    c.fillRect(7,1,1,6); c.fillRect(3,8,1,7); c.fillRect(12,8,1,7);
+    c.fillStyle = '#a86048';
+    c.fillRect(1,1,5,1); c.fillRect(9,1,6,1); c.fillRect(1,8,1,6);
+  });
+  const qblock = makeTile(c => {
+    // golden ? crate
+    c.fillStyle = '#e0a828'; c.fillRect(0,0,16,16);
+    c.fillStyle = '#b8801c'; c.fillRect(0,15,16,1); c.fillRect(15,0,1,16);
+    c.fillStyle = '#ffd75e'; c.fillRect(0,0,16,1); c.fillRect(0,0,1,16);
+    c.fillStyle = '#8a5e14';                          // corner rivets
+    c.fillRect(2,2,1,1); c.fillRect(13,2,1,1); c.fillRect(2,13,1,1); c.fillRect(13,13,1,1);
+    c.fillStyle = '#7a4e10';                          // question mark
+    c.fillRect(6,4,4,1); c.fillRect(9,5,1,2); c.fillRect(7,7,3,1);
+    c.fillRect(7,8,1,2); c.fillRect(7,12,1,1);
+  });
+  const used = makeTile(c => {
+    c.fillStyle = '#a07040'; c.fillRect(0,0,16,16);   // spent crate
+    c.fillStyle = '#7a5230'; c.fillRect(0,15,16,1); c.fillRect(15,0,1,16);
+    c.fillStyle = '#c08a58'; c.fillRect(0,0,16,1); c.fillRect(0,0,1,16);
+    c.fillStyle = '#7a5230'; c.fillRect(6,6,4,4);
+  });
+  const platform = makeTile(c => {
+    c.fillStyle = '#c08a3c'; c.fillRect(0,2,16,4);   // wooden scaffold plank
+    c.fillStyle = '#e0b060'; c.fillRect(0,2,16,1);
+    c.fillStyle = '#8a5e28'; c.fillRect(0,5,16,1);
+    c.fillStyle = '#e0b060'; c.fillRect(0,1,3,1); c.fillRect(13,1,3,1);
+    c.fillRect(0,6,3,1); c.fillRect(13,6,3,1);        // bolt caps
+  });
+  const spike = makeTile(c => {
+    // orange traffic cones (same jumpable hazard collision)
+    for (let i = 0; i < 3; i++) {
+      const bx = i*5 + 1;
+      c.fillStyle = '#e8641c';
+      c.beginPath();
+      c.moveTo(bx+2, 6); c.lineTo(bx, 16); c.lineTo(bx+4, 16);
+      c.closePath(); c.fill();
+      c.fillStyle = '#f4f0f0'; c.fillRect(bx+1, 11, 2, 2);   // reflective stripe
+      c.fillStyle = '#c04810'; c.fillRect(bx-1, 15, 6, 1);   // base
+    }
+  });
+  return { ground, dirt, brick, qblock, used, platform, spike };
+}
+const TS = makeTilesStreet();
+const tGround = TS.ground, tDirt = TS.dirt, tBrick = TS.brick,
+      tSkullBlock = TS.qblock, tUsedBlock = TS.used,
+      tPlatform = TS.platform, tSpike = TS.spike;
 
 // door: 32x32 lit theater stage door with a marquee
 const doorCv = document.createElement('canvas');
@@ -871,7 +987,6 @@ function buildLevel() {
   bat(70, 3);
   taxi(75);
   platform(78, 81, 7); candle(79, 5); candle(80, 5); pow('cross', 80, 5);   // SPICY samosas
-  spikes(84, 85);
 
   ground(89, 110);
   bat(92, 2);
@@ -879,7 +994,6 @@ function buildLevel() {
   tree(94); tomb(101, 1);
   candle(90, 8); candle(91, 8); candle(99, 8); candle(100, 8);
   set(104,7,'?'); set(105,7,'B'); set(106,7,'?');
-  set(107,9,'#'); fill(108,8,108,9,'#'); fill(109,7,109,9,'#');   // stair up
 
   platform(112, 115, 7); candle(113, 5); candle(114, 5); pow('wolf', 114, 5);   // CHAI no.1
   ground(113, 133);
@@ -1485,7 +1599,7 @@ function updatePlayer() {
   }
 
   // reach Leah at the crypt door → rescue!
-  if (player.x + player.w > leah.x - 4 && player.x < leah.x + 16 && player.y + player.h > leah.y) {
+  if (player.x + player.w > leah.x - 28 && player.x < leah.x + 44 && player.y + player.h > leah.y) {
     leah.saved = true;
     state = 'photo'; stateT = 0;
     score += hearts * 500;
@@ -1822,16 +1936,16 @@ function drawDecor() {
     ctx.fillStyle = `rgba(255,215,94,${(0.10 + 0.06*Math.sin(frame*0.08)).toFixed(3)})`;
     ctx.beginPath(); ctx.arc(dd+16, doorRect.y - cy + 18, 22, 0, 7); ctx.fill();
   }
-  // Zarna's family, cheering at the theater
+  // Zarna's family — Shalabh, Veer, Brij and Zoya — waiting at the stage door
   if (state === 'play' || state === 'dying') {
     const lx = Math.floor(leah.x - camX);
-    if (lx > -20 && lx < VW + 20) {
-      const bob = Math.sin(frame * 0.08) < -0.6 ? 1 : 0;
-      ctx.drawImage(sprLeahL, lx, leah.y - cy + bob);
+    if (lx > -90 && lx < VW + 90) {
+      const fy = 10*TILE - FAM[0].height - cy;
       ctx.fillStyle = 'rgba(255,236,150,0.12)';
-      ctx.beginPath(); ctx.arc(lx + 8, leah.y - cy + 8, 14 + Math.sin(frame*0.1)*2, 0, 7); ctx.fill();
-      if (((frame >> 5) & 1) && Math.abs(player.x - leah.x) > 60)
-        drawText(ctx, 'ZARNA!', lx - 4, leah.y - cy - 10, '#e0359a');
+      ctx.beginPath(); ctx.arc(lx + 8, leah.y - cy + 8, 34 + Math.sin(frame*0.1)*2, 0, 7); ctx.fill();
+      drawFamily(lx - 24, fy, { flip: true });
+      if (((frame >> 5) & 1) && Math.abs(player.x - leah.x) > 70)
+        drawText(ctx, 'ZARNA!', lx - 4, fy - 10, '#e0359a');
     }
   }
 }
@@ -2070,7 +2184,7 @@ function drawTitle() {
   drawTextC(ctx, 'YOUR FAMILY WAITS AT THE SHOW', 106, '#eef4fa');
   if (best > 0) drawTextC(ctx, 'BEST SCORE: ' + best, 120, '#ffd75e');
   ctx.drawImage(sprPlayer.idle, Math.floor(VW*0.12), 96);
-  ctx.drawImage(sprLeah, VW - 44, 90);
+  drawFamily(VW - 76, 92, { scale: 0.8 });
   ctx.drawImage(sprEye1, VW - 70, 120);
   ctx.drawImage(sprWolf.idle, 8, VH-40);
   ctx.drawImage(sprTaxi1L, Math.floor(VW*0.72), VH-22);
@@ -2103,11 +2217,11 @@ function drawIntro() {
   const wheelsL = ((t >> 3) & 1) ? sprTaxi1L : sprTaxi2L;
   if (driving) {
     // family in the cab, heads peeking over the roofline, waving goodbye
-    ctx.drawImage(sprLeah, Math.floor(kx) + 7, taxiY - 11, 14, 20);
+    drawFamily(Math.floor(kx) + 2, taxiY - 12, { scale: 0.55, bob: false });
     ctx.drawImage(wheels, Math.floor(kx), taxiY);
     if (((frame >> 3) & 1)) drawText(ctx, 'HURRY, ZARNA!', Math.floor(kx) - 8, taxiY - 24, '#e0359a');
   } else {
-    ctx.drawImage(sprLeah, lxI, standTop);
+    drawFamily(lxI - 20, gy - FAM[0].height);
     if (t >= 60) ctx.drawImage(wheelsL, Math.floor(kx), taxiY);   // arriving, nose left
     if (boarding && ((frame >> 3) & 1)) drawTextC(ctx, "ZARNA! YOU'RE ON IN 10 MIN!", 28, '#e0359a');
     else if (((frame >> 4) & 1) && t < 180) drawText(ctx, 'TO THE SHOW, PLEASE!', lxI - 26, standTop - 12, '#f4f0f6');
@@ -2163,7 +2277,7 @@ function drawWin() {
   // Zarna reunited with her family
   const cx = Math.floor(VW / 2);
   ctx.drawImage(sprPlayer.idle, cx - 26, 40);
-  ctx.drawImage(sprLeahL, cx + 2, 34);
+  drawFamily(cx - 2, 34, { flip: true, scale: 0.9 });
   const hb = Math.sin(frame * 0.1) * 2;
   ctx.drawImage(sprHeart, cx - 8, Math.floor(30 + hb));
   drawTextC(ctx, 'MADE IT TO THE MIC.', 68, '#f4f0f6');
