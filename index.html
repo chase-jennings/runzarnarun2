@@ -760,6 +760,33 @@ const sprBand = makeSprite([
 ".O.oo.O.",
 "..OOOO.."], { O:'#f08a2a', o:'#ffca8a' }, 8);
 
+// velvet-rope stanchion — marks the club/stage-door line the bouncer guards
+const sprStanchion = makeSprite([
+"....KGGK....",
+"....GWGG....",
+"....GGGG....",
+"....dGGd....",
+"....rdd.....",
+"...rRKGd....",
+"..rR.GGd....",
+".rR..GGd....",
+".rR..GGd....",
+".rR..GGd....",
+"..rR.GGd....",
+".....GGd....",
+".....GGd....",
+".....GGd....",
+".....GGd....",
+".....GGd....",
+".....GGd....",
+".....GGd....",
+"...KGGGGK...",
+"...GGGGGG...",
+"..KddddddK..",
+"..dddddddd..",
+"..KKKKKKKK..",
+"............"], { G:'#e0b028', d:'#a06810', K:'#241810', R:'#b01e34', r:'#6e1020', W:'#ffe9a8' }, 12);
+
 // pineapple collectible: green spiky top, golden cross-hatched body
 const P_CANDLE = { G:'#4aa83c', g:'#2f7a26', Y:'#f0b028', o:'#b87818' };
 const sprCandle1 = makeSprite([
@@ -1045,11 +1072,12 @@ function rat(x)  { enemies.push({type:'z', art:'rat',  x:x*TILE, y:10*TILE-8,  w
 function taxi(x) { enemies.push({type:'z', art:'taxi', x:x*TILE, y:10*TILE-13, w:26, h:13, vx:-0.55, vy:0, dead:0, t:0, sx:x*TILE}); }
 function hotcart(x) { enemies.push({type:'z', art:'cart', x:x*TILE, y:10*TILE-16, w:22, h:16, vx:-0.5, vy:0, dead:0, t:0, sx:x*TILE}); }
 function bat(x, y) { enemies.push({type:'b', x:x*TILE, y:y*TILE, w:14, h:9, vx:0, vy:0, dead:0, t:0, mode:0, sx:x*TILE, sy:y*TILE}); }
-function boss(x) { enemies.push({type:'boss', x:x*TILE, y:10*TILE-44, w:28, h:44, hp:15, maxhp:15, dead:0, t:0, hitFlash:0, windup:0, throwCd:120, recoil:0}); hasBoss = true; }
+function boss(x) { enemies.push({type:'boss', x:x*TILE, y:10*TILE-64, w:44, h:64, hp:15, maxhp:15, dead:0, t:0, hitFlash:0, windup:0, throwCd:120, recoil:0, greeted:0}); hasBoss = true; }
 function tomb(x, v) { decor.push({t: v ? 'tomb2':'tomb', x:x*TILE, y:9*TILE}); }
 function tree(x) { decor.push({t:'tree', x:x*TILE, y:9*TILE-32}); }
 function bill(x, k) { decor.push({t:'bill'+k, x:x*TILE, y:26}); }
 function sign(x, txt) { decor.push({t:'sign', x:x*TILE, y:10*TILE-36, txt}); }
+function stanchion(x) { decor.push({t:'rope', x:x*TILE, y:10*TILE-23}); }
 function checkpoint(x) { checkpoints.push({x:x*TILE, y:8*TILE, hit:false}); }
 function pow(type, x, y) { powerups.push({type, x:x*TILE+2, y:y*TILE+2, taken:false, t:Math.random()*99}); }
 
@@ -1058,7 +1086,7 @@ function buildLevel() {
   enemies.length = 0; candles.length = 0; decor.length = 0;
   checkpoints.length = 0; powerups.length = 0;
   seenTags = {}; quip = null;
-  bossGate = null; bossDefeated = false; hasBoss = false; bossShots.length = 0;
+  bossGate = null; bossDefeated = false; hasBoss = false; bossShots.length = 0; bossTalk = null; bossSpeech = null;
 
   // ============ ACT 1 · THE BROWNSTONE BLOCK — home turf, learn the ropes
   ground(0, 21);
@@ -1137,6 +1165,7 @@ function buildLevel() {
   sign(246, 'STAGE DOOR');
 
   // -- THE BOUNCER blocks the door; beat him to open it
+  stanchion(250); stanchion(253);                // velvet-rope line in front of him
   boss(255);
   bossGate = { x0: 263, x1: 264, y0: 3, y1: 9 };
   fill(bossGate.x0, bossGate.y0, bossGate.x1, bossGate.y1, 'B');   // closed stage doors
@@ -1452,7 +1481,7 @@ function respawn() {
 }
 function toWolf() {
   player.h = 28; player.y -= 6;
-  wolfT = 720; pendingWolf = false;
+  wolfT = 360; pendingWolf = false;
   shake = 5;
   poof(player.x + 5, player.y + 10, '#ffd75e', 14);
   addPop(player.x + 5, player.y - 12, 'SUPER AUNTIE MODE!', '#ffd75e');
@@ -1482,6 +1511,32 @@ const TAG_NAMES = { taxi:'TAXI!', rat:'A RAT!', cart:'HOT DOG CART!', b:'PIGEON!
 // Zarna's one-liners: a small caption that follows her for a moment
 let quip = null;
 function sayQuip(txt) { quip = { txt, t: 0 }; }
+// THE BOUNCER's scripted approach dialogue: a short back-and-forth on first sight
+let bossTalk = null;     // { seq:[{who,txt,dur}], i, t }
+let bossSpeech = null;   // { txt, t } — the bouncer's line, drawn over his head
+function startBossTalk() {
+  bossTalk = { i: 0, t: 0, seq: [
+    { who:'boss',  txt:'HEY! STOP!',            dur:70 },
+    { who:'zarna', txt:'OH NO, THE BOUNCER!',   dur:80 },
+    { who:'boss',  txt:"YOU'RE NOT ON THE LIST!", dur:95 },
+    { who:'zarna', txt:"BUT IT'S MY SHOW!",     dur:80 },
+    { who:'boss',  txt:'NO WRISTBAND, NO ENTRY.', dur:95 },
+  ] };
+  bossSpeech = null;
+}
+function updateBossTalk() {
+  if (!bossTalk) return;
+  const line = bossTalk.seq[bossTalk.i];
+  if (bossTalk.t === 0) {                       // entering a new line
+    if (line.who === 'zarna') { sayQuip(line.txt); bossSpeech = null; }
+    else bossSpeech = { txt: line.txt, t: 0 };
+  }
+  bossTalk.t++;
+  if (bossTalk.t >= line.dur) {
+    bossTalk.i++; bossTalk.t = 0;
+    if (bossTalk.i >= bossTalk.seq.length) { bossTalk = null; bossSpeech = null; }   // exchange over — fight on
+  }
+}
 function gainSoul(x, y) {
   souls++;
   score += 100;
@@ -1682,7 +1737,7 @@ function updatePlayer() {
     if (player.x < pu.x+12 && player.x+player.w > pu.x && player.y < pu.y+12 && player.y+player.h > pu.y) {
       pu.taken = true;
       if (pu.type === 'wolf') {
-        if (wolfT > 0) { wolfT = 720; SFX.howl(); }
+        if (wolfT > 0) { wolfT = 360; SFX.howl(); }
         else pendingWolf = true;
       } else if (pu.type === 'cross') {
         crossT = 600;
@@ -1802,7 +1857,11 @@ function updateBoss(e) {
   if (e.windup > 0) { e.windup--; if (e.windup === 0) throwBand(e); }
   const pcx = player.x + player.w/2;
   const near = Math.abs(pcx - (e.x + e.w/2)) < VW * 0.75;
-  if (state === 'play' && near && e.windup === 0) {
+  if (state === 'play' && near && !e.greeted) {   // first sight — he blocks her way
+    e.greeted = 1; startBossTalk();
+  }
+  // hold his throws until the greeting exchange is over, so the beat lands
+  if (state === 'play' && !bossTalk && near && e.windup === 0) {
     if (e.throwCd > 0) e.throwCd--;
     else { e.windup = 26; e.throwCd = 150 + Math.floor(Math.random() * 50); }   // telegraph, then throw
   }
@@ -2079,6 +2138,7 @@ function drawDecor() {
     if (d.t === 'tomb') ctx.drawImage(sprTomb, dx, d.y - cy);
     else if (d.t === 'tomb2') ctx.drawImage(sprTomb2, dx, d.y - cy);
     else if (d.t === 'tree') ctx.drawImage(treeCv, dx, d.y - cy);
+    else if (d.t === 'rope') ctx.drawImage(sprStanchion, dx, d.y - cy);
     else if (d.t === 'bill0') ctx.drawImage(bill0Cv, dx, d.y - cy);
     else if (d.t === 'bill1') ctx.drawImage(bill1Cv, dx, d.y - cy);
     else if (d.t === 'bill2') ctx.drawImage(bill2Cv, dx, d.y - cy);
@@ -2209,13 +2269,14 @@ function drawEnemies() {
       ctx.drawImage(e.vx < -0.05 ? (f ? sprEye1L : sprEye2L) : (f ? sprEye1 : sprEye2), dx-2, dy-1);
     } else if (e.type === 'boss') {
       const kick = e.recoil > 0 ? 2 : 0;           // flinch back when hit
-      const bx = dx + Math.floor((e.w - sprBoss1.width) / 2) + kick;
-      const by = dy + e.h - sprBoss1.height + (Math.sin(e.t*0.06) < -0.5 ? 1 : 0);
+      const bw = sprBoss1.width * 2, bh = sprBoss1.height * 2;   // drawn big — he's a giant
+      const bx = dx + Math.floor((e.w - bw) / 2) + kick;
+      const by = dy + e.h - bh + (Math.sin(e.t*0.06) < -0.5 ? 1 : 0);
       const spr = (e.windup > 0 && (e.windup & 2)) ? sprBoss2 : sprBoss1;
-      ctx.drawImage(spr, bx, by);
+      ctx.drawImage(spr, bx, by, bw, bh);
       const redAmt = (1 - e.hp/e.maxhp) * 0.55;    // reddens as he takes damage
-      if (redAmt > 0.01) { ctx.globalAlpha = redAmt; ctx.drawImage(sprBossRed, bx, by); ctx.globalAlpha = 1; }
-      if (e.hitFlash > 0 && (e.hitFlash & 1)) { ctx.globalAlpha = 0.5; ctx.drawImage(sprBossWhite, bx, by); ctx.globalAlpha = 1; }
+      if (redAmt > 0.01) { ctx.globalAlpha = redAmt; ctx.drawImage(sprBossRed, bx, by, bw, bh); ctx.globalAlpha = 1; }
+      if (e.hitFlash > 0 && (e.hitFlash & 1)) { ctx.globalAlpha = 0.5; ctx.drawImage(sprBossWhite, bx, by, bw, bh); ctx.globalAlpha = 1; }
     }
   }
   // orange wristbands mid-flight
@@ -2284,6 +2345,18 @@ function drawFX() {
       ctx.globalAlpha = 1;
     }
   }
+  // THE BOUNCER's barked line, hovering over his head
+  if (bossSpeech) {
+    const bz = enemies.find(e => e.type === 'boss' && !e.dead);
+    if (bz) {
+      bossSpeech.t++;
+      const btw = textW(bossSpeech.txt);
+      let btx = Math.floor(bz.x + bz.w/2 - camX - btw/2);
+      btx = Math.max(3, Math.min(btx, VW - btw - 3));   // keep the bark fully on-screen
+      const bqy = Math.floor(bz.y - camY) - 14 + Math.round(Math.sin(bossSpeech.t * 0.12) * 1.5);
+      drawTextO(ctx, bossSpeech.txt, btx, bqy, '#ffd0d0', 1, '#2a0e14');
+    } else bossSpeech = null;
+  }
 }
 
 function drawFog() {
@@ -2308,7 +2381,7 @@ function drawHUD() {
   if (wolfT > 0) {
     drawText(ctx, 'AUNTIE', 5, barY, '#ffd75e');
     ctx.fillStyle = '#3a3448'; ctx.fillRect(32, barY + 1, 30, 3);
-    ctx.fillStyle = '#ffd75e'; ctx.fillRect(32, barY + 1, Math.ceil(30 * wolfT / 720), 3);
+    ctx.fillStyle = '#ffd75e'; ctx.fillRect(32, barY + 1, Math.ceil(30 * wolfT / 360), 3);
     barY += 8;
   }
   if (crossT > 0) {
@@ -2523,6 +2596,7 @@ function tick() {
     updateFireballs();
     updateEnemies();
     updateBossShots();
+    updateBossTalk();
     updateFX();
     // camera
     const target = player.x + player.w/2 - VW*0.4;
@@ -2632,6 +2706,7 @@ window.__dbg = {
   get boss() { return enemies.find(e => e.type === 'boss'); },
   get bossDefeated() { return bossDefeated; },
   get bossShots() { return bossShots; },
+  get bossTalk() { return bossTalk; },
   killBoss() { const b = enemies.find(e => e.type === 'boss' && !e.dead); if (b) { b.hp = 0; defeatBoss(b); } },
   press: {
     primary() { input.any = true; },
