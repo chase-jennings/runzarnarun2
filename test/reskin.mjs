@@ -93,8 +93,14 @@ const jump = await page.evaluate(() => {
 });
 check('jump rises', jump > 15, `rise=${jump.toFixed(1)}`);
 
-/* samosa in flight */
+/* samosa in flight (fire from spawn into open ground so it can't
+   instantly connect with a patrolling enemy and despawn same-tick) */
 const samosa = await page.evaluate(() => {
+  window.__dbg.resetRun();
+  window.__dbg.state = 'play';
+  const h = window.__dbg.hero;
+  h.x = 2*16; h.y = 8*16; h.vx = 0; h.vy = 0; h.dir = 1;
+  window.__dbg.step(10);
   window.__dbg.press.fire(true);
   window.__dbg.step(3);
   const n = window.__dbg.fireballs.length;
