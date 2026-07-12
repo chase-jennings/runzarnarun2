@@ -139,7 +139,23 @@ check('chai triggers Super Saiyan form', chai.wolfActive, `wolfT=${chai.wolfT} h
 check('Super Saiyan grants invincibility (no heart loss)', chai.heartsAfter >= chai.heartsBefore,
       `${chai.heartsBefore}->${chai.heartsAfter}`);
 check('Super Saiyan kills enemies on contact', chai.enemyDied);
+check('chai is halved to ~360f (not 720)', chai.wolfT < 400 && chai.wolfT > 250, `wolfT=${chai.wolfT}`);
 await page.screenshot({ path: path.join(SHOT, 'reskin-05-supersaiyan.png') });
+
+/* chai expires within its shortened window and reverts to human form */
+const chaiExpiry = await page.evaluate(() => {
+  window.__dbg.resetRun(); window.__dbg.state = 'play';
+  const h = window.__dbg.hero;
+  h.x = 5*16; h.y = 8*16; h.vx = 0; h.vy = 0;
+  window.__dbg.step(10);
+  window.__dbg.requestWolf();
+  for (let i=0;i<30 && window.__dbg.wolfT===0;i++) window.__dbg.step(1);
+  const started = window.__dbg.wolfT;
+  window.__dbg.step(400);                          // well past 360 frames
+  return { started, wolfT: window.__dbg.wolfT, h: h.h };
+});
+check('chai expires by 400 frames', chaiExpiry.wolfT === 0, `started=${chaiExpiry.started} after=${chaiExpiry.wolfT}`);
+check('chai revert -> human height 22', chaiExpiry.h === 22, `h=${chaiExpiry.h}`);
 
 /* checkpoint */
 const cp = await page.evaluate(() => {
@@ -220,9 +236,26 @@ check('continue keeps score', cont.kept);
 const bossStart = await page.evaluate(() => {
   window.__dbg.resetRun(); window.__dbg.state = 'play';
   const b = window.__dbg.boss;
-  return { exists: !!b, hp: b && b.hp, defeated: window.__dbg.bossDefeated };
+  return { exists: !!b, hp: b && b.hp, w: b && b.w, h: b && b.h, defeated: window.__dbg.bossDefeated };
 });
 check('boss exists with 15 hp', bossStart.exists && bossStart.hp === 15, `hp=${bossStart.hp}`);
+check('boss is big (hitbox 44x64)', bossStart.exists && bossStart.w === 44 && bossStart.h === 64, `w=${bossStart.w} h=${bossStart.h}`);
+
+// approaching the bouncer triggers his one-time dialogue
+const bossGreet = await page.evaluate(() => {
+  window.__dbg.resetRun(); window.__dbg.state = 'play';
+  const h = window.__dbg.hero, b = window.__dbg.boss;
+  h.inv = 99999;
+  let talk = false;
+  for (let i=0;i<150;i++){                          // let the camera pan to the arena
+    h.x = b.x - 40; h.y = b.y + 20; h.vx = 0;       // re-pin near the bouncer
+    window.__dbg.step(1);
+    if (window.__dbg.bossTalk) talk = true;
+    if (talk) break;
+  }
+  return { greeted: !!b.greeted, talk };
+});
+check('approaching the bouncer starts dialogue', bossGreet.greeted && bossGreet.talk, `greeted=${bossGreet.greeted} talk=${bossGreet.talk}`);
 
 // Super Auntie contact must NOT kill the boss
 const bossImmune = await page.evaluate(() => {
