@@ -272,109 +272,63 @@ const PLAYER_TOP = [
 "....LLLLLLLL....",
 "....LLLllLLL...."
 ];
-const sprPlayer = {
-  idle: makeSprite(PLAYER_TOP.concat([
+const LEGS = {
+  idle: [
     "....LLL..LLL....",
     "....LLl..lLL....",
     "....LL....LL....",
     "...WWW....WWW...",
-    "...www....www..."]), P_PLAYER),
-  run1: makeSprite(PLAYER_TOP.concat([
+    "...www....www..."],
+  run1: [
     "....LLL..LLL....",
     "...LLl....lLL...",
     "..LL........LL..",
     ".WWW........WWW.",
-    ".www........www."]), P_PLAYER),
-  run2: makeSprite(PLAYER_TOP.concat([
+    ".www........www."],
+  run2: [
     ".....LLLLLL.....",
     ".....LLllLL.....",
     ".....LL..LL.....",
     "....WWW..WWW....",
-    "....www..www...."]), P_PLAYER),
-  jump: makeSprite(PLAYER_TOP.concat([
+    "....www..www...."],
+  jump: [
     "....LLL..LLL....",
     "...LLL....LLL...",
     "...WW......WW...",
     "..www......www..",
-    "................"]), P_PLAYER)
+    "................"]
 };
+const sprPlayer = {};
+for (const k in LEGS) sprPlayer[k] = makeSprite(PLAYER_TOP.concat(LEGS[k]), P_PLAYER);
 for (const k in sprPlayer) sprPlayer[k+'L'] = flipSprite(sprPlayer[k]);
 
-// Super Saiyan Zarna: 20x32, spiky blond upsweep, solid white eyes,
-// glowing golden dress, radiant white/gold aura. Same hitbox + frames.
-const P_WOLF = { F:'#ffd75e', D:'#ffb01e', R:'#ffffff', W:'#fff6d0', G:'#ff9c2c' };
+// SUPER AUNTIE MODE: the same Zarna sprite, but her kurta and hair turn
+// golden yellow and she glows. Built from the player rows padded into the
+// engine's 20x32 power-form canvas (feet land on the same row the wolf's
+// did), so every draw offset and the taller hitbox behave identically.
+const P_WOLF = { H:'#ffe27a', h:'#ffb01e',
+                 F:'#c98a5e', f:'#a86e46', E:'#20140c', M:'#8c3a2a',
+                 K:'#ffd033', k:'#e0a81e', G:'#fff6d0', g:'#e8ce8a',
+                 R:'#e0243c', L:'#20202a', l:'#12121a',
+                 W:'#f4f0f6', w:'#c8c4d4', A:'#fff8dc' };
 const WOLF_W = 20;
-const WOLF_TOP = [
-"....DD........DD....",
-"....DDD......DDD....",
-".....DFFFFFFFFD.....",
-"....FFFFFFFFFFFF....",
-"....FRRFFFFFFRRF....",
-"....FFFFFFFFFFFF....",
-".....FFDDDDDDFF.....",
-".....DDDDDDDDDD.....",
-".....DWDWWDWWDD.....",
-"......DDDDDDDD......",
-".....FFFFFFFFFF.....",
-"....FFFFFFFFFFFF....",
-"...FFFFGGGGGGFFFF...",
-"..WFFFFGGGGGGFFFFW..",
-"..WFFFFGGGGGGFFFFW..",
-"..WFFFFGGGGGGFFFFW..",
-"...FFFFGGGGGGFFFF...",
-"....FFFGGGGGGFFF....",
-"....FFFFGGGGFFFF....",
-".....FFFFFFFFFF.....",
-".....FFFFFFFFFF.....",
-".....FFFFFFFFFF....."
+const AUNTIE_GLOW = [   // rising golden energy above her hair
+"......A...A..A......",
+".......A.A..A.......",
+"......A.AA.A.A......",
+".......AAAAAA.......",
+"......hAAAAAAh......",
+".......hhhhhh......."
 ];
-function wolfSprite(legs) { return makeSprite(WOLF_TOP.concat(legs), P_WOLF, WOLF_W); }
-const sprWolf = {
-  idle: wolfSprite([
-    ".....FFFF..FFFF.....",
-    ".....FFF....FFF.....",
-    ".....FFF....FFF.....",
-    "......FF....FF......",
-    "......FF....FF......",
-    ".....FFF....FFF.....",
-    ".....FF......FF.....",
-    "....WWF......FWW....",
-    "....................",
-    "...................."]),
-  run1: wolfSprite([
-    ".....FFFF..FFFF.....",
-    "....FFF......FFF....",
-    "...FFF........FFF...",
-    "..FF............FF..",
-    ".FF..............FF.",
-    "WWF..............FWW",
-    "....................",
-    "....................",
-    "....................",
-    "...................."]),
-  run2: wolfSprite([
-    ".....FFFF..FFFF.....",
-    "......FFF..FFF......",
-    "......FF....FF......",
-    "......FF....FF......",
-    ".....FFF....FFF.....",
-    ".....WWF....FWW.....",
-    "....................",
-    "....................",
-    "....................",
-    "...................."]),
-  jump: wolfSprite([
-    ".....FFFF..FFFF.....",
-    "....FFFF....FFFF....",
-    "...WWF........FWW...",
-    "....................",
-    "....................",
-    "....................",
-    "....................",
-    "....................",
-    "....................",
-    "...................."])
-};
+const pad2 = r => '..' + r + '..';
+function auntieSprite(legs) {
+  return makeSprite(
+    AUNTIE_GLOW.concat(PLAYER_TOP.map(pad2), legs.map(pad2),
+      ["....................", "...................."]),
+    P_WOLF, WOLF_W);
+}
+const sprWolf = {};
+for (const k in LEGS) sprWolf[k] = auntieSprite(LEGS[k]);
 for (const k in sprWolf) sprWolf[k+'L'] = flipSprite(sprWolf[k]);
 
 // black german shepherd, faithful and loud
@@ -401,7 +355,7 @@ const sprDog2 = makeSprite(DOG_TOP.concat([
 const sprDog1L = flipSprite(sprDog1), sprDog2L = flipSprite(sprDog2);
 
 // power-ups
-// chai cup — collecting it triggers the Super Saiyan transform
+// chai cup — collecting it triggers Super Auntie Mode
 const sprMoon = makeSprite([
 "....S..S....",
 "...S..S.....",
@@ -781,6 +735,32 @@ castleCv.width = 96; castleCv.height = 84;
   for (let wy = 34; wy < 82; wy += 7) { c.fillRect(22, wy, 2, 2); c.fillRect(70, wy, 2, 2); }
 }
 
+// Statue of Liberty rising over the rooftops, same hazy backdrop style.
+// Tall enough that her upper body always clears the near-rooftop layer.
+const libertyCv = document.createElement('canvas');
+libertyCv.width = 26; libertyCv.height = 84;
+{
+  const c = libertyCv.getContext('2d');
+  c.fillStyle = '#79b89a';                                 // copper patina
+  c.fillRect(9, 16, 10, 26);       // robe body
+  c.fillRect(7, 40, 14, 6);        // robe flare
+  c.fillRect(11, 10, 6, 6);        // head
+  c.fillRect(8, 14, 2, 3); c.fillRect(18, 14, 2, 3);       // shoulders
+  c.fillRect(19, 6, 2, 10);        // raised torch arm
+  c.fillRect(6, 22, 3, 3);         // tablet arm
+  for (let i = 0; i < 4; i++) c.fillRect(10 + i*2, 8 - (i===1||i===2?2:1), 1, 3);   // crown spikes
+  c.fillStyle = '#63a487';                                 // shading
+  c.fillRect(15, 16, 4, 26); c.fillRect(16, 40, 5, 6);
+  c.fillStyle = '#ffd75e';                                 // torch flame
+  c.fillRect(18, 2, 4, 5); c.fillStyle = '#fff0b0'; c.fillRect(19, 3, 2, 2);
+  c.fillStyle = '#8a9bb0';                                 // tall stone pedestal
+  c.fillRect(9, 46, 10, 5); c.fillRect(6, 51, 16, 9); c.fillRect(4, 60, 20, 24);
+  c.fillStyle = '#a4b4c8';
+  c.fillRect(6, 51, 16, 1); c.fillRect(4, 60, 20, 1); c.fillRect(4, 60, 2, 24);
+  c.fillStyle = '#6e7f94';
+  c.fillRect(20, 62, 4, 22); c.fillRect(11, 64, 2, 6); c.fillRect(15, 64, 2, 6);
+}
+
 // checkpoint: 16x32 subway sign post — lights up when reached
 function makeLantern(lit) {
   const cv = document.createElement('canvas');
@@ -966,7 +946,7 @@ const SFX = {
   heart()   { tone(520, 780, 0.15, 'triangle', 0.07); },
   win()     { [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, f, 0.16, 'square', 0.06, i*0.11)); },
   ghost()   { tone(500, 900, 0.18, 'triangle', 0.04); },   // camera focus chirp
-  howl()    { // Super Saiyan power-up: bright ascending chime + shimmer whoosh
+  howl()    { // Super Auntie power-up: bright ascending chime + shimmer whoosh
               [523, 659, 784, 1047].forEach((f, i) => tone(f, f, 0.12, 'square', 0.06, i*0.06));
               tone(1047, 1568, 0.4, 'sine', 0.05, 0.24); noise(0.15, 0.03); },
   fire()    { tone(700, 300, 0.08, 'triangle', 0.05); noise(0.03, 0.02); },   // samosa fwip
@@ -988,7 +968,7 @@ const SFX = {
 //------------------------------------------------ music: chiptune step sequencer
 // Three tracks scheduled ahead on the WebAudio clock. No audio files.
 //  night — bouncy major-key comedy caper (Bollywood-fusion groove)
-//  wolf  — triumphant, driving Super Saiyan surge
+//  wolf  — triumphant, driving Super Auntie surge
 //  win   — bright celebratory fanfare for showtime
 const M2F = m => 440 * Math.pow(2, (m - 69) / 12);
 const __ = null;
@@ -1170,9 +1150,9 @@ document.addEventListener('contextmenu', e => e.preventDefault());
 //------------------------------------------------ game state
 let state = 'title';    // title | intro | play | dying | gameover | photo | win
 let stateT = 0;
-// the family photo shown after reaching the show
+// Zarna on stage, crowd roaring — shown after reaching the show
 const endingImg = new Image();
-endingImg.src = 'IMG_6009.webp?v=1';
+endingImg.src = 'ending.webp?v=1';
 // illustrated title card (?v= busts stale phone caches when the art changes)
 const titleImg = new Image();
 titleImg.src = 'IMG_6009.webp?v=1';
@@ -1219,7 +1199,7 @@ function toWolf() {
   wolfT = 720; pendingWolf = false;
   shake = 5;
   poof(player.x + 5, player.y + 10, '#ffd75e', 14);
-  addPop(player.x + 5, player.y - 12, 'SUPER SAIYAN!', '#ffd75e');
+  addPop(player.x + 5, player.y - 12, 'SUPER AUNTIE MODE!', '#ffd75e');
   SFX.howl();
 }
 function toHuman() {
@@ -1541,7 +1521,7 @@ function updateEnemies() {
         player.x < e.x + e.w && player.x + player.w > e.x &&
         player.y < e.y + e.h && player.y + player.h > e.y) {
       if (wolfT > 0) {
-        // Super Saiyan Zarna blasts through everything, even paparazzi
+        // Super Auntie Zarna blasts through everything, even paparazzi
         e.dead = 1;
         score += 200;
         addPop(e.x, e.y - 8, '+200');
@@ -1750,6 +1730,8 @@ function drawBackdrop() {
 
   // a landmark skyline cluster, farther back
   ctx.drawImage(castleCv, Math.floor(186 - camX*0.03), 62);
+  // Lady Liberty rising over the rooftops
+  ctx.drawImage(libertyCv, Math.floor(120 - camX*0.028), 68);
 
   // near rooftops + water towers (closest parallax)
   ctx.fillStyle = '#5a7290';
@@ -1964,7 +1946,7 @@ function drawPlayer() {
   else if (Math.abs(player.vx) > 0.2) key = (Math.floor(player.anim) & 1) ? 'run1' : 'run2';
   else key = 'idle';
   const sp = SHEET[key + (player.dir > 0 ? '' : 'L')];
-  if (isWolf) {   // radiant Super Saiyan aura
+  if (isWolf) {   // radiant Super Auntie aura
     const cx = Math.floor(player.x - camX) + 5, cyw = Math.floor(player.y - camY) + 10;
     ctx.fillStyle = `rgba(255,236,150,${(0.14 + 0.08*Math.sin(frame*0.3)).toFixed(3)})`;
     ctx.beginPath(); ctx.arc(cx, cyw, 24 + Math.sin(frame*0.3)*3, 0, 7); ctx.fill();
@@ -2015,9 +1997,9 @@ function drawHUD() {
   drawText(ctx, st, VW - textW(st) - 5, 6, '#e8e0d0');
   let barY = 26;
   if (wolfT > 0) {
-    drawText(ctx, 'SUPER', 5, barY, '#ffd75e');
-    ctx.fillStyle = '#3a3448'; ctx.fillRect(28, barY + 1, 30, 3);
-    ctx.fillStyle = '#ffd75e'; ctx.fillRect(28, barY + 1, Math.ceil(30 * wolfT / 720), 3);
+    drawText(ctx, 'AUNTIE', 5, barY, '#ffd75e');
+    ctx.fillStyle = '#3a3448'; ctx.fillRect(32, barY + 1, 30, 3);
+    ctx.fillStyle = '#ffd75e'; ctx.fillRect(32, barY + 1, Math.ceil(30 * wolfT / 720), 3);
     barY += 8;
   }
   if (crossT > 0) {
@@ -2081,7 +2063,7 @@ function drawTitle() {
   if (blink) drawTextC(ctx, hasTouch ? 'TAP TO BEGIN' : 'PRESS SPACE', 52, '#fff4c0', 2);
   drawTextC(ctx, 'RACE TO THE MIC', 72, '#f4f0f6');
   drawTextC(ctx, 'TOSS SAMOSAS TO CLEAR THE WAY', 86, '#eef4fa');
-  drawTextC(ctx, 'GRAB A CHAI TO GO SUPER SAIYAN', 96, '#eef4fa');
+  drawTextC(ctx, 'GRAB A CHAI FOR SUPER AUNTIE MODE', 96, '#eef4fa');
   drawTextC(ctx, 'YOUR FAMILY WAITS AT THE SHOW', 106, '#eef4fa');
   if (best > 0) drawTextC(ctx, 'BEST ' + best, 120, '#ffd75e');
   ctx.drawImage(sprPlayer.idle, Math.floor(VW*0.12), 96);
@@ -2169,7 +2151,7 @@ function drawPhoto() {
   const hb = Math.sin(frame * 0.1) * 2;
   ctx.drawImage(sprHeart, 6, Math.floor(6 + hb));
   ctx.drawImage(sprHeart, VW - 14, Math.floor(6 + hb));
-  drawTextC(ctx, 'MADE IT TO SHOWTIME', VH - 10, '#f4f0f6');
+  drawTextC(ctx, 'MADE IT JUST IN TIME FOR THE SHOW!', VH - 10, '#f4f0f6');
   ctx.globalAlpha = 1;
 }
 
