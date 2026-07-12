@@ -414,24 +414,27 @@ const sprLeah = makeSprite([
 "................"], P_LEAH);
 const sprLeahL = flipSprite(sprLeah);
 
-// window-washer on a rope, 12x7 — figure in a blue jumpsuit with a squeegee
-const P_SPIDER = { K:'#3a5a8c', k:'#264066', F:'#e0a878', W:'#c8d8e0', S:'#8a8f98' };
+// wobbly window AC unit on a movers' rope, 12x8 — slips when you walk under,
+// dangles, then gets winched back up. Classic NYC hazard.
+const P_SPIDER = { K:'#3a3f48', G:'#9aa2ac', V:'#5a626c', W:'#c8d0d8', b:'#8fd0e8' };
 const sprSpider1 = makeSprite([
-"....SS......",
-"....FF......",
-"...KKKK..WW.",
-"..KKKKKK.S..",
-"..KKKKKK....",
-"...KKKK.....",
-"...K..K....."], P_SPIDER, 12);
+"KKKKKKKKKKKK",
+"KWGGGGGGGGWK",
+"KVGVGVGVGVGK",
+"KVGVGVGVGVGK",
+"KGGGGGGGGGGK",
+"KKKKKKKKKKKK",
+".....b......",
+"............"], P_SPIDER, 12);
 const sprSpider2 = makeSprite([
-"....SS......",
-"....FF......",
-"...KKKK.WW..",
-"..KKKKKKS...",
-"..KKKKKK....",
-"...KKKK.....",
-"..K....K...."], P_SPIDER, 12);
+"KKKKKKKKKKKK",
+"KWGGGGGGGGWK",
+"KGVGVGVGVGVK",
+"KGVGVGVGVGVK",
+"KGGGGGGGGGGK",
+"KKKKKKKKKKKK",
+"............",
+".....b......"], P_SPIDER, 12);
 
 // samosa projectile, 8x8, two flicker frames (golden-brown triangle)
 const P_FIRE = { O:'#d99a3c', o:'#a86e28', Y:'#ffe0a0', R:'#8a5620', W:'#fff0c8' };
@@ -454,67 +457,102 @@ const sprFire2 = makeSprite([
 "ooooooo.",
 "........"], P_FIRE, 8);
 
-// dawdling tourist: straw sun hat, hawaiian shirt, chest camera, backpack, shorts
-const P_ZOMB = { H:'#e8d06a', h:'#c9ad4a', F:'#e0a878', E:'#20140c',
-                 S:'#e8483c', s:'#b83028', C:'#20242e', L:'#8fd0e8',
-                 P:'#3a6ea8', W:'#f0f0f0', K:'#7a5230' };
-const ZOMB_TOP = [
-"....HHHHHH......",
-"...HHHHHHHH.....",
-"..HHHHHHHHHH....",
-"....FFFFFF......",
-"....FEFFEF......",
-"....FFFFFF......",
-"...SSSSSSSS.KK..",
-"...SSCCSSSS.KK..",
-"...SSCLCSSS.KK..",
-"...SSSSSSSS.KK..",
-"....PPPPPP......"
-];
-const sprZomb1 = makeSprite(ZOMB_TOP.concat([
-  "....PP.PP.......",
-  "....F...F.......",
-  "....F...F.......",
-  "...WW...WW......",
-  "................"]), P_ZOMB);
-const sprZomb2 = makeSprite(ZOMB_TOP.concat([
-  "....PP.PP.......",
-  "....F...F.......",
-  "...F.....F......",
-  "..WW.....WW.....",
-  "................"]), P_ZOMB);
-const sprZomb1L = flipSprite(sprZomb1), sprZomb2L = flipSprite(sprZomb2);
+// pizza rat: a little grey rat proudly dragging a slice bigger than itself
+const P_RAT = { G:'#9aa0aa', g:'#6e747e', E:'#20140c', P:'#e8a0b0',
+                C:'#f6b23a', c:'#c07830', R:'#e04848' };
+const sprRat1 = makeSprite([
+"..........CCC...",
+".........CCCCC..",
+"..GG....CCRCCCc.",
+".GGGG..GCRCCCc..",
+"PGGGGGGGGECCc...",
+".gGGGGGGGGg.....",
+"..G..G..G.......",
+"................"], P_RAT);
+const sprRat2 = makeSprite([
+"..........CCC...",
+".........CCCCC..",
+"..GG....CCRCCCc.",
+"P.GGG..GCRCCCc..",
+".PGGGGGGGECCc...",
+".gGGGGGGGGg.....",
+".G..G..G........",
+"................"], P_RAT);
+const sprRat1L = flipSprite(sprRat1), sprRat2L = flipSprite(sprRat2);
 
-// paparazzo: a person with a big camera raised to their face, flash bursting
-const P_GHOST = { S:'#d8b048', s:'#b0882c', F:'#e0a878', C:'#20242e',
-                  L:'#6a7480', W:'#fff6d0', H:'#2a2a30', B:'#20242e', O:'#6a7480' };
-const sprGhost1 = makeSprite([
-".....HHHH.......",
-"....HHHHHH......",
-"....FFFFFF..WW..",
-"...CCCCCCCC.WWW.",
-"...CCCLLCCC..W..",
-"...CCCLLCCC.....",
-"...CCCCCCCC.....",
-"..FSSSSSSSSF....",
-"...SSSSSSSS.....",
-"...SSSSSSSS.....",
-"...SSS..SSS.....",
-"...SS....SS....."], P_GHOST);
-const sprGhost2 = makeSprite([
-".....HHHH.......",
-"....HHHHHH..W...",
-"....FFFFFF.WWW..",
-"...CCCCCCCC..W..",
-"...CCCLLCCC.....",
-"...CCCLLCCC.....",
-"...CCCCCCCC.....",
-"..FSSSSSSSSF....",
-"...SSSSSSSS.....",
-"...SSSSSSSS.....",
-"...SSS..SSS.....",
-"...SS....SS....."], P_GHOST);
+// yellow cab, 26x14 — cruises the street; bounce off the roof for a honk
+const P_TAXI = { Y:'#f6c518', y:'#cf9d0e', K:'#1a1a1e', k:'#3a3f46',
+                 W:'#a8d8f0', w:'#8a929c', L:'#fff0b0', R:'#e04010', H:'#fff6d0' };
+const TAXI_TOP = [
+"..........KLLK............",
+".......KKKKKKKKKKK........",
+"......KWWWKWWWKWWWK.......",
+"......KWWWKWWWKWWWK.......",
+".YYYYYKKKKKKKKKKKKKYYYY...",
+"YYYYYYYYYYYYYYYYYYYYYYYH..",
+"RYKYKYKYKYKYKYKYKYKYKYYY..",
+"YYYYYYYYYYYYYYYYYYYYYYYH..",
+"yyyyyyyyyyyyyyyyyyyyyyyy.."
+];
+const sprTaxi1 = makeSprite(TAXI_TOP.concat([
+  "..KKKK.........KKKK.......",
+  ".KkwwkK.......KkwwkK......",
+  ".KkwwkK.......KkwwkK......",
+  "..KKKK.........KKKK.......",
+  ".........................."]), P_TAXI, 26);
+const sprTaxi2 = makeSprite(TAXI_TOP.concat([
+  "..KKKK.........KKKK.......",
+  ".KkwkkK.......KkwkkK......",
+  ".KkkwkK.......KkkwkK......",
+  "..KKKK.........KKKK.......",
+  ".........................."]), P_TAXI, 26);
+const sprTaxi1L = flipSprite(sprTaxi1), sprTaxi2L = flipSprite(sprTaxi2);
+
+// living-statue street performer (Lady Liberty costume): tiptoes toward
+// Zarna when she looks away, snaps into the frozen statue pose when watched
+const P_GHOST = { V:'#8fd0b0', v:'#5fa080', f:'#b8d8c8', C:'#6fb896',
+                  T:'#ffd75e', E:'#20342c' };
+const sprGhost1 = makeSprite([   // creeping, mid-tiptoe
+"................",
+"...C.C.C........",
+"...VVVVV........",
+"...VfEfV........",
+"...VfffV....VV..",
+"..VVVVVVVVVVV...",
+"..VVVVVVVV......",
+"...VVVVVV.......",
+"...VVVVVV.......",
+"...VVV.VVV......",
+"..VV.....VV.....",
+"..v.......v....."], P_GHOST);
+const sprGhost2 = makeSprite([   // creeping, other foot
+"................",
+"...C.C.C........",
+"...VVVVV........",
+"...VfEfV........",
+"...VfffV..VV....",
+"..VVVVVVVVV.....",
+"..VVVVVVVV......",
+"...VVVVVV.......",
+"...VVVVVV.......",
+"....VVVV........",
+"...VV..VV.......",
+"...v....v......."], P_GHOST);
+const sprGhostF = makeSprite([   // caught! frozen in the Liberty pose
+".........T......",
+".........V......",
+"..C.C.C..V......",
+"..VVVVV..V......",
+"..VfEfV.VV......",
+"..VfffVVV.......",
+".VVVVVVV........",
+".VVVVVVV........",
+".VVVVVVV........",
+".VVVVVVVV.......",
+"VVVVVVVVV.......",
+"vvvvvvvvv......."], P_GHOST);
 const sprGhost1L = flipSprite(sprGhost1), sprGhost2L = flipSprite(sprGhost2);
+const sprGhostFL = flipSprite(sprGhostF);
 
 // pigeon: grey city bird with flapping wings and an orange beak
 const P_EYE = { W:'#c8d0d8', w:'#a4acb4', G:'#8a94a0', g:'#6a747f',
@@ -717,6 +755,28 @@ treeCv.width = 32; treeCv.height = 48;
   c.beginPath(); c.arc(22, 16, 5, 0, 7); c.fill();
 }
 
+// hot-dog cart with a striped umbrella, 24x22 street decor
+const cartCv = document.createElement('canvas');
+cartCv.width = 24; cartCv.height = 22;
+{
+  const c = cartCv.getContext('2d');
+  c.fillStyle = '#e04838';                               // umbrella stripes
+  c.fillRect(3, 2, 18, 3); c.fillRect(1, 4, 22, 1);
+  c.fillStyle = '#fff4d8';
+  c.fillRect(6, 2, 4, 3); c.fillRect(14, 2, 4, 3);
+  c.fillStyle = '#c9302a'; c.fillRect(3, 1, 18, 1);
+  c.fillStyle = '#8a6a3c'; c.fillRect(11, 5, 2, 6);      // pole
+  c.fillStyle = '#c8ccd4'; c.fillRect(2, 11, 20, 6);     // cart body
+  c.fillStyle = '#e8ecf0'; c.fillRect(2, 11, 20, 1);
+  c.fillStyle = '#9aa0aa'; c.fillRect(2, 16, 20, 1);
+  c.fillStyle = '#d98a3c'; c.fillRect(5, 13, 8, 2);      // painted hot dog
+  c.fillStyle = '#f6c518'; c.fillRect(6, 13, 6, 1);      // mustard squiggle
+  c.fillStyle = '#2a2e34';                               // wheels + handle
+  c.fillRect(4, 17, 4, 4); c.fillRect(16, 17, 4, 4);
+  c.fillStyle = '#6a727c'; c.fillRect(5, 18, 2, 2); c.fillRect(17, 18, 2, 2);
+  c.fillStyle = '#9aa0aa'; c.fillRect(22, 12, 2, 1);     // push handle
+}
+
 // distant NYC skyline building cluster, 16-bit backdrop layer
 const castleCv = document.createElement('canvas');
 castleCv.width = 96; castleCv.height = 84;
@@ -787,7 +847,8 @@ function fill(x0,y0,x1,y1,ch){ for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++) s
 function platform(x0, x1, y) { for (let x=x0; x<=x1; x++) set(x,y,'-'); }
 function spikes(x0, x1) { for (let x=x0; x<=x1; x++) set(x,9,'^'); }
 function candle(x, y) { candles.push({x:x*TILE+4, y:y*TILE+2, taken:false, t:Math.random()*99}); }
-function zombie(x) { enemies.push({type:'z', x:x*TILE, y:9*TILE, w:12, h:15, vx:-0.35, vy:0, dead:0, t:0, sx:x*TILE}); }
+function rat(x)  { enemies.push({type:'z', art:'rat',  x:x*TILE, y:10*TILE-7,  w:12, h:7,  vx:-0.4,  vy:0, dead:0, t:0, sx:x*TILE}); }
+function taxi(x) { enemies.push({type:'z', art:'taxi', x:x*TILE, y:10*TILE-12, w:22, h:12, vx:-0.55, vy:0, dead:0, t:0, sx:x*TILE}); }
 function bat(x, y) { enemies.push({type:'b', x:x*TILE, y:y*TILE, w:14, h:8, vx:0, vy:0, dead:0, t:0, mode:0, sx:x*TILE, sy:y*TILE}); }
 function ghost(x, y) { enemies.push({type:'g', x:x*TILE, y:y*TILE, w:13, h:11, vx:0, vy:0, dead:0, t:Math.random()*99, sx:x*TILE, sy:y*TILE}); }
 function spider(x, row, len) {
@@ -796,6 +857,7 @@ function spider(x, row, len) {
 }
 function tomb(x, v) { decor.push({t: v ? 'tomb2':'tomb', x:x*TILE, y:9*TILE}); }
 function tree(x) { decor.push({t:'tree', x:x*TILE, y:9*TILE-32}); }
+function cart(x) { decor.push({t:'cart', x:x*TILE, y:10*TILE-22}); }
 function checkpoint(x) { checkpoints.push({x:x*TILE, y:8*TILE, hit:false}); }
 function pow(type, x, y) { powerups.push({type, x:x*TILE+2, y:y*TILE+2, taken:false, t:Math.random()*99}); }
 
@@ -806,9 +868,9 @@ function buildLevel() {
 
   // -- opening stretch: learn to run & jump
   ground(0, 18);
-  tomb(4); tomb(7, 1); tree(10); tomb(14);
+  tomb(4); tomb(7, 1); tree(10); tomb(14); cart(17);
   candle(6, 8); candle(8, 8); candle(10, 8);
-  zombie(13);
+  rat(13);
   set(16,7,'?'); set(17,7,'B'); set(18,7,'?');
 
   // -- first pit
@@ -816,7 +878,7 @@ function buildLevel() {
   platform(24, 27, 7);
   candle(25, 5); candle(26, 5);
   spider(26, 7, 24);
-  bat(30, 3); zombie(32);
+  bat(30, 3); taxi(32);
   tomb(28);
 
   // -- bone bridge over pit
@@ -824,7 +886,7 @@ function buildLevel() {
   candle(36, 6);
 
   ground(38, 52);
-  zombie(42); zombie(46);
+  taxi(42); rat(46);
   tree(40); tomb(44, 1);
   set(49,9,'#'); fill(50,8,50,9,'#'); fill(51,7,51,9,'#');   // stair up
 
@@ -841,13 +903,13 @@ function buildLevel() {
   platform(65, 69, 7);
   spider(67, 7, 18);
   candle(66, 5); candle(67, 5); candle(68, 5);
-  zombie(72);
+  rat(72);
   checkpoint(74);
 
   ground(79, 95);
-  tree(82);
+  tree(82); cart(85);
   set(84,6,'?'); set(85,6,'B'); set(86,6,'?');
-  zombie(88); bat(90, 2); zombie(93);
+  taxi(88); bat(90, 2); rat(93);
   tomb(91, 1);
 
   platform(97, 98, 7);
@@ -858,7 +920,7 @@ function buildLevel() {
   ground(100, 118);
   ghost(105, 3);
   candle(103, 7); candle(104, 7);
-  zombie(108);
+  taxi(108);
   set(110,9,'#'); fill(111,8,111,9,'#'); fill(112,7,112,9,'#');
   fill(113,6,113,9,'#'); fill(114,7,114,9,'#'); fill(115,8,115,9,'#'); set(116,9,'#');
   candle(113, 3);
@@ -870,7 +932,7 @@ function buildLevel() {
   platform(126, 133, 7);
   spider(132, 7, 18);
   candle(128, 5); candle(129, 5); candle(130, 5); candle(131, 5);
-  zombie(136); tomb(138, 1);
+  taxi(136); tomb(138, 1);
   pow('heart', 134, 8);
 
   platform(142, 143, 7);
@@ -880,7 +942,7 @@ function buildLevel() {
   ground(145, 175);
   checkpoint(147);
   tomb(148); tree(151); tomb(153, 1); tomb(157); tree(162); tomb(164, 1);
-  zombie(150); bat(152, 2); zombie(155); bat(158, 3); zombie(160); ghost(163, 3); zombie(166);
+  cart(146); taxi(150); bat(152, 2); rat(155); bat(158, 3); taxi(160); ghost(163, 3); rat(166);
   pow('cross', 159, 8);
   candle(168, 8); candle(169, 8); candle(170, 8);
   set(171,9,'#'); fill(172,8,172,9,'#'); fill(173,7,173,9,'#');
@@ -1476,7 +1538,7 @@ function updateEnemies() {
     }
 
     else if (e.type === 's') {
-      // lurks above, drops on a silk thread, dangles, climbs back
+      // hangs overhead, slips down the rope, dangles, gets winched back up
       if (e.mode === 0) {
         e.y = e.ax + Math.sin(e.t * 0.06) * 1.5;
         if (e.t > 40 && Math.abs((player.x + player.w/2) - (e.x + 5)) < 34 && player.y > e.ax) {
@@ -1521,7 +1583,7 @@ function updateEnemies() {
         player.x < e.x + e.w && player.x + player.w > e.x &&
         player.y < e.y + e.h && player.y + player.h > e.y) {
       if (wolfT > 0) {
-        // Super Auntie Zarna blasts through everything, even paparazzi
+        // Super Auntie Zarna blasts through everything, even living statues
         e.dead = 1;
         score += 200;
         addPop(e.x, e.y - 8, '+200');
@@ -1537,8 +1599,9 @@ function updateEnemies() {
         player.vy = -4.6;
         score += 200;
         addPop(e.x, e.y - 8, '+200');
-        poof(e.x + e.w/2, e.y + e.h/2, e.type === 'z' ? '#e8483c' : e.type === 'b' ? '#b8c0c8' : '#d8b048', 9);
+        poof(e.x + e.w/2, e.y + e.h/2, e.art === 'taxi' ? '#f6c518' : e.type === 'b' ? '#b8c0c8' : '#9aa0aa', 9);
         SFX.stomp();
+        if (e.art === 'taxi') { tone(340, 300, 0.13, 'square', 0.09); tone(430, 380, 0.13, 'square', 0.09, 0.03); }   // honk!
       } else {
         hurt(e.x + e.w/2);
       }
@@ -1568,7 +1631,7 @@ function updateFireballs() {
     for (const e of enemies) {
       if (e.dead) continue;
       if (fb.x < e.x + e.w && fb.x + 6 > e.x && fb.y < e.y + e.h && fb.y + 6 > e.y) {
-        if (e.type === 'g') {           // paparazzi shrug off samosas
+        if (e.type === 'g') {           // living statues shrug off samosas
           poof(fb.x + 3, fb.y + 3, '#fff6d0', 6);
           SFX.ghost();
           return false;
@@ -1775,6 +1838,7 @@ function drawDecor() {
     if (d.t === 'tomb') ctx.drawImage(sprTomb, dx, d.y - cy);
     else if (d.t === 'tomb2') ctx.drawImage(sprTomb2, dx, d.y - cy);
     else if (d.t === 'tree') ctx.drawImage(treeCv, dx, d.y - cy);
+    else if (d.t === 'cart') ctx.drawImage(cartCv, dx, d.y - cy);
   }
   for (const cp of checkpoints) {
     const dx = Math.floor(cp.x - camX);
@@ -1804,48 +1868,6 @@ function drawDecor() {
         drawText(ctx, 'ZARNA!', lx - 4, leah.y - cy - 10, '#e0359a');
     }
   }
-}
-
-// the theater usher: pillbox cap, burgundy uniform with gold buttons,
-// white gloves, waving the family in with a big smile. Friendly, not a villain.
-const P_KING = { C:'#ffd75e', c:'#c99a2c', B:'#20242e',
-                 F:'#e0a878', E:'#20140c', M:'#8c3a2a',
-                 U:'#a02838', u:'#7a1c2a', W:'#f4f0f6' };
-const sprKing = makeSprite([
-"................",
-"....CCCCCC......",
-"...BBBBBBBB.....",
-"...BBBCCBBB.....",
-"....FFFFFF......",
-"....FEFFEF......",
-"....FFFFFF......",
-"....FFMMFF......",
-".....FFFF.......",
-"..W.UUUUUU......",
-".WWW.UUUUUU.....",
-"..W..UCUUCU.....",
-".....UUUUUU.....",
-"....UUCUUCUU....",
-"....UUUUUUUU....",
-"....UUCUUCUU....",
-"....UUUUUUUU....",
-"....UUUUUUUU....",
-"....uUUUUUu.....",
-"....uUUUUUu.....",
-"....UUU.UUU.....",
-"....UUU.UUU.....",
-"....UUU.UUU.....",
-"....UUU.UUU.....",
-"....BBB.BBB.....",
-"....BBB.BBB.....",
-"...BBBB.BBBB....",
-"................",
-"................",
-"................",
-"................",
-"................"], P_KING);
-function drawKing(x, y) {
-  ctx.drawImage(sprKing, x, y);
 }
 
 function drawFireballs() {
@@ -1909,28 +1931,42 @@ function drawEnemies() {
     const dy = Math.floor(e.y - cy);
     if (e.dead) {                       // squash flicker
       ctx.globalAlpha = 1 - e.dead/22;
-      if (e.type === 'z') ctx.drawImage(sprZomb1, dx-2, dy+8, 16, 8);
+      if (e.type === 'z') {
+        if (e.art === 'taxi') ctx.drawImage(sprTaxi1, dx-2, dy+6, 26, 6);
+        else ctx.drawImage(sprRat1, dx-2, dy+4, 16, 4);
+      }
       else if (e.type === 'b') ctx.drawImage(sprEye2, dx, dy+2, 16, 5);
       ctx.globalAlpha = 1;
       continue;
     }
     if (e.type === 'z') {
-      const f = (e.t >> 4) & 1;
-      const sp = e.vx > 0 ? (f ? sprZomb1 : sprZomb2) : (f ? sprZomb1L : sprZomb2L);
-      ctx.drawImage(sp, dx-2, dy-1);
+      if (e.art === 'taxi') {
+        const f = (e.t >> 3) & 1;   // wheels roll faster than feet patter
+        const sp = e.vx > 0 ? (f ? sprTaxi1 : sprTaxi2) : (f ? sprTaxi1L : sprTaxi2L);
+        ctx.drawImage(sp, dx-2, dy-1);
+      } else {
+        const f = (e.t >> 4) & 1;
+        const sp = e.vx > 0 ? (f ? sprRat1 : sprRat2) : (f ? sprRat1L : sprRat2L);
+        ctx.drawImage(sp, dx-2, dy-1);
+      }
     } else if (e.type === 'b') {
       ctx.drawImage(((e.t >> 3) & 1) ? sprEye1 : sprEye2, dx-1, dy);
     } else if (e.type === 's') {
-      ctx.fillStyle = 'rgba(220,220,240,0.45)';                    // silk thread
+      ctx.fillStyle = 'rgba(200,200,210,0.6)';                     // movers' rope
       ctx.fillRect(dx + 5, e.ax - cy - 6, 1, dy - (e.ax - cy) + 8);
       const f = (e.mode === 1 || e.mode === 3) ? ((e.t >> 2) & 1) : ((e.t >> 4) & 1);
       ctx.drawImage(f ? sprSpider1 : sprSpider2, dx, dy);
     } else if (e.type === 'g') {
-      const f = (e.t >> 4) & 1;
       const px = player.x + player.w/2;
-      const sp = (e.x + e.w/2) > px ? (f ? sprGhost1L : sprGhost2L) : (f ? sprGhost1 : sprGhost2);
-      ctx.globalAlpha = e.shy ? 0.25 : (0.78 + 0.1*Math.sin(e.t*0.1));
-      ctx.drawImage(sp, dx-1, dy-1);
+      const facingLeft = (e.x + e.w/2) > px;
+      if (e.shy) {   // spotted! freeze into the statue pose, innocent as bronze
+        ctx.globalAlpha = 0.96;
+        ctx.drawImage(facingLeft ? sprGhostFL : sprGhostF, dx-1, dy-1);
+      } else {
+        const f = (e.t >> 4) & 1;
+        ctx.globalAlpha = 0.9;
+        ctx.drawImage(facingLeft ? (f ? sprGhost1L : sprGhost2L) : (f ? sprGhost1 : sprGhost2), dx-1, dy-1);
+      }
       ctx.globalAlpha = 1;
     }
   }
@@ -2044,33 +2080,31 @@ function drawTitle() {
     const x = Math.floor((VW - w) / 2);
     const y = -Math.floor((h - VH) * 0.35);
     ctx.drawImage(titleImg, x, y, w, h);
-    // live text, outlined for readability
+    // live text, outlined for readability — keep the sky and pavement
+    // strips; never cover the family's faces mid-frame
     drawTextCO(ctx, 'RUN, ZARNA, RUN!', 16, '#ff4aa8', 3);
-    drawTextCO(ctx, 'SHOWTIME', 36, '#ffd75e', 2);
-    drawTextCO(ctx, 'RACE TO THE MIC!', 52, '#f4f0f6');
+    drawTextCO(ctx, 'RACE TO THE MIC!', 38, '#ffd75e', 2);
     if ((frame >> 5) & 1)
-      drawTextCO(ctx, hasTouch ? 'TAP TO BEGIN' : 'PRESS SPACE', 62, '#fff4c0', 2);
-    if (best > 0) drawTextCO(ctx, 'BEST ' + best, VH - 22, '#ffd75e');
-    drawTextCO(ctx, '(C) 2026 | ZARNA GARG', VH - 9, '#f4f0f6');
+      drawTextCO(ctx, hasTouch ? 'TAP TO BEGIN' : 'PRESS SPACE', VH - 34, '#fff4c0', 2);
+    if (best > 0) drawTextCO(ctx, 'BEST SCORE: ' + best, VH - 14, '#ffd75e');
     return;
   }
   // fallback if the art hasn't loaded
   ctx.fillStyle = 'rgba(20,80,140,0.55)';
   ctx.fillRect(0, 0, VW, VH);
   drawTextC(ctx, 'RUN, ZARNA, RUN!', 12, '#ff4aa8', 3);
-  drawTextC(ctx, '(C) 2026 | ZARNA GARG', VH - 9, '#f4f0f6');
+  drawTextC(ctx, 'RACE TO THE MIC!', 34, '#ffd75e', 2);
   const blink = (frame >> 5) & 1;
   if (blink) drawTextC(ctx, hasTouch ? 'TAP TO BEGIN' : 'PRESS SPACE', 52, '#fff4c0', 2);
-  drawTextC(ctx, 'RACE TO THE MIC', 72, '#f4f0f6');
   drawTextC(ctx, 'TOSS SAMOSAS TO CLEAR THE WAY', 86, '#eef4fa');
   drawTextC(ctx, 'GRAB A CHAI FOR SUPER AUNTIE MODE', 96, '#eef4fa');
   drawTextC(ctx, 'YOUR FAMILY WAITS AT THE SHOW', 106, '#eef4fa');
-  if (best > 0) drawTextC(ctx, 'BEST ' + best, 120, '#ffd75e');
+  if (best > 0) drawTextC(ctx, 'BEST SCORE: ' + best, 120, '#ffd75e');
   ctx.drawImage(sprPlayer.idle, Math.floor(VW*0.12), 96);
   ctx.drawImage(sprLeah, VW - 44, 90);
   ctx.drawImage(sprGhost1, VW - 70, 120);
   ctx.drawImage(sprWolf.idle, 8, VH-40);
-  ctx.drawImage(sprZomb1L, Math.floor(VW*0.72), VH-22);
+  ctx.drawImage(sprTaxi1L, Math.floor(VW*0.72), VH-22);
 }
 
 function drawIntro() {
@@ -2085,39 +2119,37 @@ function drawIntro() {
   const lxI = Math.floor(VW * 0.68);
   ctx.drawImage(sprPlayer.idle, 29, standTop);
 
-  // the usher glides in, greets the family... then escorts them toward the theater
-  let kx = -100, ky = 6, grabbed = false, hovering = false;
-  const kyGrab = standTop - 26;
+  // a yellow cab pulls up, the family piles in, and off they go to the show
+  const taxiY = gy - 14;
+  let kx = VW + 40, boarding = false, driving = false;
   if (t >= 60) {
     const p = Math.min(1, (t - 60) / 120);
-    kx = (VW + 40) - (VW + 40 - lxI) * p;
-    ky = 6 + (kyGrab - 6) * p;
-    hovering = t >= 180 && t < 210;
-    grabbed = t >= 210;
-    if (hovering) { kx = lxI; ky = kyGrab + Math.sin(t * 0.3) * 2; }
-    if (grabbed) {
-      kx = lxI + (t - 210) * 2.2;
-      ky = kyGrab + Math.sin(t * 0.15) * 3;
-    }
+    const ease = 1 - (1 - p) * (1 - p);            // decelerates to the curb
+    kx = (VW + 40) - (VW + 40 - (lxI + 16)) * ease;
+    boarding = t >= 180 && t < 210;
+    driving = t >= 210;
+    if (driving) kx = (lxI + 16) + (t - 210) * 2.2;
   }
-  if (grabbed) {
-    drawKing(Math.floor(kx), Math.floor(ky));
-    // family escorted in, walking upright beside the usher
-    ctx.drawImage(sprLeah, Math.floor(kx) - 6, standTop + Math.round(Math.sin(t * 0.2)));
-    if (((frame >> 3) & 1)) drawText(ctx, 'HURRY, ZARNA!', Math.floor(kx) - 12, Math.floor(ky) - 10, '#e0359a');
+  const wheels = ((t >> 3) & 1) ? sprTaxi1 : sprTaxi2;
+  const wheelsL = ((t >> 3) & 1) ? sprTaxi1L : sprTaxi2L;
+  if (driving) {
+    // family in the cab, heads peeking over the roofline, waving goodbye
+    ctx.drawImage(sprLeah, Math.floor(kx) + 5, taxiY - 9, 14, 20);
+    ctx.drawImage(wheels, Math.floor(kx), taxiY);
+    if (((frame >> 3) & 1)) drawText(ctx, 'HURRY, ZARNA!', Math.floor(kx) - 8, taxiY - 24, '#e0359a');
   } else {
     ctx.drawImage(sprLeah, lxI, standTop);
-    if (t >= 60) drawKing(Math.floor(kx), Math.floor(ky));
-    if (hovering && ((frame >> 3) & 1)) drawTextC(ctx, "YOU'RE ON IN 10 MIN!", Math.floor(ky) - 2, '#e0359a');
-    else if (((frame >> 4) & 1) && t < 180) drawText(ctx, 'READY, ZARNA?', lxI - 20, standTop - 12, '#f4f0f6');
+    if (t >= 60) ctx.drawImage(wheelsL, Math.floor(kx), taxiY);   // arriving, nose left
+    if (boarding && ((frame >> 3) & 1)) drawTextC(ctx, "ZARNA! YOU'RE ON IN 10 MIN!", 28, '#e0359a');
+    else if (((frame >> 4) & 1) && t < 180) drawText(ctx, 'TO THE SHOW, PLEASE!', lxI - 26, standTop - 12, '#f4f0f6');
   }
 
   drawFog();
 
   if (t < 210) {
-    drawTextC(ctx, 'SHOWTIME APPROACHES...', 14, '#ffd75e');
+    drawTextC(ctx, 'THE FAMILY IS OFF TO HER BIG SHOW...', 14, '#ffd75e');
   } else {
-    drawTextC(ctx, 'GET TO THE MIC!', 12, '#f4f0f6', 2);
+    drawTextC(ctx, 'ZARNA IS RUNNING LATE!', 12, '#f4f0f6', 2);
     if ((frame >> 4) & 1) drawTextC(ctx, 'RUN, ZARNA, RUN!', 30, '#ff4aa8');
   }
   drawText(ctx, hasTouch ? 'TAP TO SKIP' : 'SPACE TO SKIP', VW - 60, VH - 10, '#3a5a78');
@@ -2130,7 +2162,7 @@ function drawGameOver() {
   drawTextC(ctx, 'THE CROWD IS WAITING...', 46, '#f4f0f6');
   drawTextC(ctx, 'CATCH THE NEXT TRAIN', 58, '#a8c4dc');
   drawTextC(ctx, 'SCORE ' + score, 76, '#eef4fa');
-  if (best > 0) drawTextC(ctx, 'BEST ' + best, 88, '#ffd75e');
+  if (best > 0) drawTextC(ctx, 'BEST SCORE: ' + best, 88, '#ffd75e');
   if ((frame >> 5) & 1) drawTextC(ctx, hasTouch ? 'TAP TO CONTINUE' : 'SPACE TO CONTINUE', 108, '#eef4fa', 2);
   drawTextC(ctx, 'RESUME AT THE LAST STOP, SCORE KEPT', 128, '#7a94ac');
 }
@@ -2169,7 +2201,7 @@ function drawWin() {
   drawTextC(ctx, 'THE OPENER STILL RAN LONG.', 78, '#a8c4dc');
   drawTextC(ctx, 'FAMILY IN THE FRONT ROW.', 90, '#e0359a');
   drawTextC(ctx, 'PINEAPPLES ' + souls + '   SCORE ' + score, 102, '#eef4fa');
-  if (best > 0) drawTextC(ctx, 'BEST ' + best, 112, '#ffd75e');
+  if (best > 0) drawTextC(ctx, 'BEST SCORE: ' + best, 112, '#ffd75e');
   if ((frame >> 5) & 1) drawTextC(ctx, hasTouch ? 'TAP TO PLAY AGAIN' : 'PRESS SPACE', 124, '#eef4fa', 2);
 }
 
@@ -2195,8 +2227,8 @@ function tick() {
     if (input.any) { input.any = false; resetRun(); state = 'intro'; stateT = 0; startAmbience(); startMusic(); }
   } else if (state === 'intro') {
     updateFX();
-    if (stateT === 180) { SFX.laugh(); shake = 6; }   // the grab
-    if (stateT === 300) SFX.help();                   // her cry from beyond the trees
+    if (stateT === 180) { SFX.laugh(); shake = 6; }   // the phone-buzz: you're ON in 10!
+    if (stateT === 300) SFX.help();                   // the family calls from the cab
     if (stateT > 400 || (stateT > 20 && input.any)) {
       input.any = false;
       state = 'play'; stateT = 0;
