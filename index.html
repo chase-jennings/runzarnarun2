@@ -2330,6 +2330,7 @@ function drawEnemies() {
 
 function drawPlayer() {
   if (state === 'gameover') return;
+  if (state === 'win') return;   // the win panel composes its own reunion — don't let the world Zarna poke through the text
   if (player.inv > 0 && (frame & 3) < 2 && state === 'play') return;   // blink
   const isWolf = wolfT > 0;
   const SHEET = isWolf ? sprWolf : sprPlayer;
