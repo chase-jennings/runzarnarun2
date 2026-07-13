@@ -257,6 +257,15 @@ const bossGreet = await page.evaluate(() => {
 });
 check('approaching the bouncer starts dialogue', bossGreet.greeted && bossGreet.talk, `greeted=${bossGreet.greeted} talk=${bossGreet.talk}`);
 
+// standoff music kicks in at the dialogue and flips back after the defeat
+const bossMusic = await page.evaluate(() => {
+  const during = window.__dbg.musicMode;         // boss already engaged from previous check
+  window.__dbg.killBoss(); window.__dbg.step(2);
+  return { during, after: window.__dbg.musicMode };
+});
+check('boss music during the standoff', bossMusic.during === 'boss', `mode=${bossMusic.during}`);
+check('happy music returns after defeat', bossMusic.after !== 'boss', `mode=${bossMusic.after}`);
+
 // Super Auntie contact must NOT kill the boss
 const bossImmune = await page.evaluate(() => {
   window.__dbg.resetRun(); window.__dbg.state = 'play';
