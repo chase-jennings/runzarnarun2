@@ -1470,9 +1470,12 @@ let stateT = 0;
 // Zarna on stage, crowd roaring — shown after reaching the show
 const endingImg = new Image();
 endingImg.src = 'ending.webp?v=1';
-// illustrated title card (?v= busts stale phone caches when the art changes)
+// illustrated title card (?v= busts stale phone caches when the art changes).
+// Prefer the new wide, margin-composed art; fall back to the original upload
+// until title.webp is added, so the responsive layout works either way.
 const titleImg = new Image();
-titleImg.src = 'IMG_6009.webp?v=1';
+titleImg.onerror = () => { if (!/IMG_6009/.test(titleImg.src)) titleImg.src = 'IMG_6009.webp?v=1'; };
+titleImg.src = 'title.webp?v=1';
 let score = 0, souls = 0, hearts = 3;
 let best = 0;
 try { best = parseInt(localStorage.getItem('graverunner.best') || '0', 10) || 0; } catch(e) {}
@@ -2474,10 +2477,19 @@ function drawTutorial() {
 // layer and the blit stage draws the artwork straight onto the full-
 // resolution screen canvas with smooth scaling (drawHiResArt below).
 function titleCoverRect() {
-  // full-bleed artwork (cover fit, biased to keep the ground in frame)
+  // cover/fill layer — max scale, fills the view; used behind the fit layer so
+  // wide screens have a colour-correct zoomed backdrop instead of empty bars
   const s = Math.max(VW / titleImg.naturalWidth, VH / titleImg.naturalHeight);
   const w = Math.ceil(titleImg.naturalWidth * s), h = Math.ceil(titleImg.naturalHeight * s);
   return { x: Math.floor((VW - w) / 2), y: -Math.floor((h - VH) * 0.35), w, h };
+}
+function titleFitRect() {
+  // fit-to-HEIGHT — always shows the art's full height, so its sky band (top)
+  // and pavement strip (bottom) are present at fixed fractions of the view;
+  // text placed by fraction-of-VH therefore never lands on the family's faces
+  const s = VH / titleImg.naturalHeight;
+  const w = Math.round(titleImg.naturalWidth * s), h = VH;
+  return { x: Math.round((VW - w) / 2), y: 0, w, h };
 }
 function photoRect() {
   const availW = VW - 16, availH = VH - 22;
@@ -2489,13 +2501,16 @@ function photoRect() {
 function drawTitle() {
   if (titleImg.complete && titleImg.naturalWidth > 0) {
     ctx.clearRect(0, 0, VW, VH);   // artwork shows through from the hi-res layer
-    // live text, outlined for readability — keep the sky and pavement
-    // strips; never cover the family's faces mid-frame
-    drawTextCO(ctx, 'RUN, ZARNA, RUN!', 16, '#ff4aa8', 3);
-    drawTextCO(ctx, 'RACE TO THE MIC!', 38, '#ffd75e', 2);
+    // Text sits in the sky band (top) and pavement strip (bottom), placed as a
+    // fraction of the view so it stays clear of faces at any aspect ratio. In
+    // short landscape views the title shrinks so both lines fit the sky band.
+    const roomy = VH >= 140;
+    const tSc = roomy ? 3 : 2, sSc = roomy ? 2 : 1;
+    drawTextCO(ctx, 'RUN, ZARNA, RUN!', Math.round(VH*0.05), '#ff4aa8', tSc);
+    drawTextCO(ctx, 'RACE TO THE MIC!', Math.round(VH*0.05) + tSc*5 + 4, '#ffd75e', sSc);
     if ((frame >> 5) & 1)
-      drawTextCO(ctx, hasTouch ? 'TAP TO BEGIN' : 'PRESS SPACE', VH - 34, '#fff4c0', 2);
-    if (best > 0) drawTextCO(ctx, 'BEST SCORE: ' + best, VH - 14, '#ffd75e');
+      drawTextCO(ctx, hasTouch ? 'TAP TO BEGIN' : 'PRESS SPACE', VH - Math.round(VH*0.15), '#fff4c0', 2);
+    if (best > 0) drawTextCO(ctx, 'BEST SCORE: ' + best, VH - Math.round(VH*0.06), '#ffd75e');
     return;
   }
   // fallback if the art hasn't loaded
@@ -2739,19 +2754,33 @@ function render() {
 
 // title/ending artwork drawn straight to the device-resolution canvas with
 // smooth scaling, so faces stay crisp instead of pixel-mulched
+function blitArt(img, r, alpha) {   // r is in view px; map through the letterbox
+  sctx.globalAlpha = alpha;
+  sctx.drawImage(img, offX + r.x*scale, offY + r.y*scale, r.w*scale, r.h*scale);
+  sctx.globalAlpha = 1;
+}
 function drawHiResArt() {
-  let img = null, r = null, alpha = 1;
-  if (state === 'title' && titleImg.complete && titleImg.naturalWidth > 0) {
-    img = titleImg; r = titleCoverRect();
-  } else if (state === 'photo' && endingImg.complete && endingImg.naturalWidth > 0) {
-    img = endingImg; r = photoRect(); alpha = Math.min(1, stateT / 40);
-  }
-  if (!img) return;
   sctx.save();
   sctx.beginPath(); sctx.rect(offX, offY, VW*scale, VH*scale); sctx.clip();
   sctx.imageSmoothingEnabled = true; sctx.imageSmoothingQuality = 'high';
-  sctx.globalAlpha = alpha;
-  sctx.drawImage(img, offX + r.x*scale, offY + r.y*scale, r.w*scale, r.h*scale);
+  if (state === 'title' && titleImg.complete && titleImg.naturalWidth > 0) {
+    // 1) zoomed cover layer fills the side gaps with a colour-correct backdrop
+    blitArt(titleImg, titleCoverRect(), 1);
+    sctx.fillStyle = 'rgba(8,20,40,0.34)';                 // dim the backdrop so the framed scene pops
+    sctx.fillRect(offX, offY, VW*scale, VH*scale);
+    // 2) crisp fit-to-height scene, centred, full margins intact
+    blitArt(titleImg, titleFitRect(), 1);
+    // 3) soft scrims top & bottom so the title / prompt always read
+    const tB = Math.round(VH*0.30)*scale, bB = Math.round(VH*0.24)*scale;
+    let g = sctx.createLinearGradient(0, offY, 0, offY + tB);
+    g.addColorStop(0, 'rgba(6,16,34,0.62)'); g.addColorStop(1, 'rgba(6,16,34,0)');
+    sctx.fillStyle = g; sctx.fillRect(offX, offY, VW*scale, tB);
+    g = sctx.createLinearGradient(0, offY + VH*scale - bB, 0, offY + VH*scale);
+    g.addColorStop(0, 'rgba(6,16,34,0)'); g.addColorStop(1, 'rgba(6,16,34,0.62)');
+    sctx.fillStyle = g; sctx.fillRect(offX, offY + VH*scale - bB, VW*scale, bB);
+  } else if (state === 'photo' && endingImg.complete && endingImg.naturalWidth > 0) {
+    blitArt(endingImg, photoRect(), Math.min(1, stateT / 40));
+  }
   sctx.restore();
   sctx.imageSmoothingEnabled = false;
 }
