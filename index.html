@@ -2468,16 +2468,27 @@ function drawTutorial() {
   ctx.globalAlpha = 1;
 }
 
+// The pixel canvas is tiny (<=416 wide), so photos routed through it get
+// mulched to ~400px and then nearest-neighbor upscaled — faces turn to
+// garble. Instead the photo states punch a transparent hole in the pixel
+// layer and the blit stage draws the artwork straight onto the full-
+// resolution screen canvas with smooth scaling (drawHiResArt below).
+function titleCoverRect() {
+  // full-bleed artwork (cover fit, biased to keep the ground in frame)
+  const s = Math.max(VW / titleImg.naturalWidth, VH / titleImg.naturalHeight);
+  const w = Math.ceil(titleImg.naturalWidth * s), h = Math.ceil(titleImg.naturalHeight * s);
+  return { x: Math.floor((VW - w) / 2), y: -Math.floor((h - VH) * 0.35), w, h };
+}
+function photoRect() {
+  const availW = VW - 16, availH = VH - 22;
+  const s = Math.min(availW / endingImg.naturalWidth, availH / endingImg.naturalHeight);
+  const w = Math.floor(endingImg.naturalWidth * s), h = Math.floor(endingImg.naturalHeight * s);
+  return { x: Math.floor((VW - w) / 2), y: Math.floor((VH - 14 - h) / 2) + 2, w, h };
+}
+
 function drawTitle() {
-  drawBackdrop();
-  drawFog();
   if (titleImg.complete && titleImg.naturalWidth > 0) {
-    // full-bleed artwork (cover fit, biased to keep the ground in frame)
-    const s = Math.max(VW / titleImg.naturalWidth, VH / titleImg.naturalHeight);
-    const w = Math.ceil(titleImg.naturalWidth * s), h = Math.ceil(titleImg.naturalHeight * s);
-    const x = Math.floor((VW - w) / 2);
-    const y = -Math.floor((h - VH) * 0.35);
-    ctx.drawImage(titleImg, x, y, w, h);
+    ctx.clearRect(0, 0, VW, VH);   // artwork shows through from the hi-res layer
     // live text, outlined for readability — keep the sky and pavement
     // strips; never cover the family's faces mid-frame
     drawTextCO(ctx, 'RUN, ZARNA, RUN!', 16, '#ff4aa8', 3);
@@ -2488,6 +2499,8 @@ function drawTitle() {
     return;
   }
   // fallback if the art hasn't loaded
+  drawBackdrop();
+  drawFog();
   ctx.fillStyle = 'rgba(20,80,140,0.55)';
   ctx.fillRect(0, 0, VW, VH);
   drawTextC(ctx, 'RUN, ZARNA, RUN!', 12, '#ff4aa8', 3);
@@ -2570,13 +2583,10 @@ function drawPhoto() {
   ctx.fillRect(0, 0, VW, VH);
   ctx.globalAlpha = Math.min(1, stateT / 40);   // gentle fade-in
   if (endingImg.complete && endingImg.naturalWidth > 0) {
-    const availW = VW - 16, availH = VH - 22;
-    const s = Math.min(availW / endingImg.naturalWidth, availH / endingImg.naturalHeight);
-    const w = Math.floor(endingImg.naturalWidth * s), h = Math.floor(endingImg.naturalHeight * s);
-    const x = Math.floor((VW - w) / 2), y = Math.floor((VH - 14 - h) / 2) + 2;
+    const r = photoRect();
     ctx.fillStyle = '#f4f0f6';
-    ctx.fillRect(x - 2, y - 2, w + 4, h + 4);   // white photo frame
-    ctx.drawImage(endingImg, x, y, w, h);
+    ctx.fillRect(r.x - 2, r.y - 2, r.w + 4, r.h + 4);   // white photo frame
+    ctx.clearRect(r.x, r.y, r.w, r.h);   // photo shows through from the hi-res layer
   }
   const hb = Math.sin(frame * 0.1) * 2;
   ctx.drawImage(sprHeart, 6, Math.floor(6 + hb));
@@ -2723,7 +2733,27 @@ function render() {
   // blit scaled to screen
   sctx.fillStyle = '#000';
   sctx.fillRect(0, 0, screen.width, screen.height);
+  drawHiResArt();   // photo-quality artwork under the pixel layer's hole
   sctx.drawImage(view, 0, 0, VW, VH, offX, offY, VW*scale, VH*scale);
+}
+
+// title/ending artwork drawn straight to the device-resolution canvas with
+// smooth scaling, so faces stay crisp instead of pixel-mulched
+function drawHiResArt() {
+  let img = null, r = null, alpha = 1;
+  if (state === 'title' && titleImg.complete && titleImg.naturalWidth > 0) {
+    img = titleImg; r = titleCoverRect();
+  } else if (state === 'photo' && endingImg.complete && endingImg.naturalWidth > 0) {
+    img = endingImg; r = photoRect(); alpha = Math.min(1, stateT / 40);
+  }
+  if (!img) return;
+  sctx.save();
+  sctx.beginPath(); sctx.rect(offX, offY, VW*scale, VH*scale); sctx.clip();
+  sctx.imageSmoothingEnabled = true; sctx.imageSmoothingQuality = 'high';
+  sctx.globalAlpha = alpha;
+  sctx.drawImage(img, offX + r.x*scale, offY + r.y*scale, r.w*scale, r.h*scale);
+  sctx.restore();
+  sctx.imageSmoothingEnabled = false;
 }
 
 // ------------------------------------------------ test hook (non-invasive)
