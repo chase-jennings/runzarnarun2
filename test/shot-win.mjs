@@ -17,8 +17,10 @@ for (const [name, viewport, dsf] of [
     window.__dbg.pause(true);
     window.__dbg.resetRun(); window.__dbg.state = 'play';
     window.__dbg.score = 11850; window.__dbg.hearts = 3;
+    const h = window.__dbg.hero; h.inv = 99999;
+    window.__dbg.step(5240);                      // ~87s of play so TIME reads realistically
     window.__dbg.killBoss();
-    const h = window.__dbg.hero, L = window.__dbg.leah;
+    const L = window.__dbg.leah;
     h.x = L.x; h.y = L.y - 16; h.inv = 99999;
     for (let i=0;i<12;i++){ window.__dbg.step(1); if (window.__dbg.state==='photo') break; }
     window.__dbg.step(40);
