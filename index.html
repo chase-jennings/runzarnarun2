@@ -77,11 +77,11 @@
     letter-spacing:1px;
   }
   #bB {
-    width:66px; height:66px;
-    right:calc(116px + env(safe-area-inset-right));
-    bottom:calc(26px + env(safe-area-inset-bottom));
+    width:84px; height:84px;
+    right:calc(122px + env(safe-area-inset-right));
+    bottom:calc(18px + env(safe-area-inset-bottom));
     border-radius:50%;
-    font-size:15px;
+    font-size:19px;
     letter-spacing:1px;
     border-color:rgba(232,100,28,.6);
     color:rgba(255,220,150,.95);
@@ -127,15 +127,18 @@ ctx.imageSmoothingEnabled = false;
 
 let scale = 1, offX = 0, offY = 0;
 let fitSig = '';
+// size from the LAYOUT viewport (clientWidth/Height): unlike innerWidth,
+// it doesn't shrink when iOS pinch/double-tap zoom sneaks through, so the
+// canvas can never collapse into the top-left corner mid-game
+function layoutW() { return document.documentElement.clientWidth  || window.innerWidth; }
+function layoutH() { return document.documentElement.clientHeight || window.innerHeight; }
 function viewportSig() {
-  const vv = window.visualViewport;
-  return window.innerWidth + 'x' + window.innerHeight +
-         (vv ? '/' + Math.round(vv.width) + 'x' + Math.round(vv.height) + '@' + vv.scale.toFixed(2) : '');
+  return layoutW() + 'x' + layoutH();
 }
 function fit() {
   fitSig = viewportSig();
   const dpr = Math.min(window.devicePixelRatio || 1, 3);
-  const w = window.innerWidth, h = window.innerHeight;
+  const w = layoutW(), h = layoutH();
   screen.width  = Math.round(w * dpr);
   screen.height = Math.round(h * dpr);
   screen.style.width = w + 'px';
@@ -158,10 +161,14 @@ if (window.visualViewport) {
   window.visualViewport.addEventListener('resize', fit);
   window.visualViewport.addEventListener('scroll', fit);
 }
-// iOS: block pinch-zoom on the game entirely — zooming desyncs the
-// canvas and the touch controls
+// iOS: block pinch-zoom AND double-tap zoom on the game entirely —
+// zooming desyncs the canvas and the touch controls (rapid FIRE taps
+// were triggering Safari's double-tap zoom at the boss fight)
 document.addEventListener('gesturestart', e => e.preventDefault());
 document.addEventListener('gesturechange', e => e.preventDefault());
+document.addEventListener('gestureend', e => e.preventDefault());
+document.addEventListener('touchend', e => { if (e.cancelable) e.preventDefault(); }, { passive:false });
+document.addEventListener('dblclick', e => e.preventDefault());
 fit();
 
 //------------------------------------------------ tiny 3x5 pixel font
@@ -703,28 +710,28 @@ const sprBoss1 = makeSprite([
 "......KKKKKKKK..KKKKKKKK......",
 ".....KKKKKKKKK..KKKKKKKKK....."], P_BOSS, 30);
 const sprBoss2 = makeSprite([
-"............KKKKKK......OO....",
-"..........KKKKKKKKKK...OFFO...",
-".........KKKKKKKKKKKK..OFFO...",
-".........KFFFFFFFFFFK...FF....",
-".........FFFFFFFFFFFF...FF....",
-"........FFFFFFFFFFFFFF.sFF....",
-"........KKKKKKKKKKKKKKsFF.....",
-"........KWKKKKKKKKKKWKFF......",
-"........FFFFFFFFFFFFFF........",
-".........FFFFFFFFFFFF.........",
-"..........FFFFFFFFFF..........",
-"...........FFFFFFFF...........",
-".......SSSSSSSSSSSSSSSS.......",
-"......SSSSSSSSSSSSSSSSSS......",
-".....SSSSSSSSSSSSSSSSSSSS.....",
-"....FFSSSSSSSSSSSSSSSSSSSS....",
-"...OFFFFFFFFFFFFFFFFFFFSSS....",
-"...OFFFFFFFFFFFFFFFFFFFFSS....",
-"....FFFFFFFFFFFFFFFFFFFFFF....",
-"....sFFFFFFFFFFFFFFFFFFFFs....",
-"....SSSSSSSSSSSSSSSSSSSSSS....",
-"....SSSSSSSSSWWWWSSSSSSSSS....",
+"..OOO.......KKKKKK............",
+"..OoO.....KKKKKKKKKK..........",
+".KFFF....KKKKKKKKKKKK.........",
+".KFFF....KFFFFFFFFFFK.........",
+"..KFF....FFFFFFFFFFFF.........",
+"..KFF...FFFFFFFFFFFFFF........",
+"..KFF...KKKKKKKKKKKKKK........",
+"..KFF...KWKKKKKKKKKKWK........",
+"...KFF..FFFFFFFFFFFFFF........",
+"...KFF...FFFFFFFFFFFF.........",
+"...KFF....FFFFFFFFFF..........",
+"...KFF.....FFFFFFFF...........",
+"....KFFSSSSSSSSSSSSSSSS.......",
+"....KFFSSSSSSSSSSSSSSSSS..FFK.",
+".....SSSSSSSSSSSSSSSSSSSS.FFK.",
+"....SSSSSSSSSSSSSSSSSSSSSSFFK.",
+"....SSSSSSSSSSSSSSSSSSSSSSFFK.",
+"....SSSSSSSSSSSSSSSSSSSSSSFFK.",
+"....SSSSSSSSSSSSSSSSSSSSSSFFK.",
+"....SSSSSSSSSSSSSSSSSSSSSSOOK.",
+"....SSSSSSSSSSSSSSSSSSSSSSFFK.",
+"....SSSSSSSSSWWWWSSSSSSSSSFFK.",
 "....SSSSSSSSSWKKWSSSSSSSSS....",
 "....SSSSSSSSSWWWWSSSSSSSSS....",
 "....SSSSSSSSSSSSSSSSSSSSSS....",
@@ -749,6 +756,8 @@ function tintSprite(spr, color) {
 }
 const sprBossRed = tintSprite(sprBoss1, '#e02020');
 const sprBossWhite = tintSprite(sprBoss1, '#ffffff');
+const sprBoss2Red = tintSprite(sprBoss2, '#e02020');
+const sprBoss2White = tintSprite(sprBoss2, '#ffffff');
 // little orange wristband projectile, 8x8
 const sprBand = makeSprite([
 "..OOOO..",
@@ -1061,6 +1070,7 @@ const COLS = 276, ROWS = 12;
 let grid;
 const enemies = [], candles = [], decor = [], checkpoints = [], powerups = [];
 let doorRect = null, leah = null, bossGate = null, bossDefeated = false, hasBoss = false;
+let bossEngaged = false;   // true from the bouncer's first bark until he's beaten — drives the standoff music
 
 function set(x, y, ch) { if (x>=0 && x<COLS && y>=0 && y<ROWS) grid[y][x] = ch; }
 function ground(x0, x1) { for (let x=x0; x<=x1; x++) { set(x,10,'#'); set(x,11,'D'); } }
@@ -1072,7 +1082,7 @@ function rat(x)  { enemies.push({type:'z', art:'rat',  x:x*TILE, y:10*TILE-8,  w
 function taxi(x) { enemies.push({type:'z', art:'taxi', x:x*TILE, y:10*TILE-13, w:26, h:13, vx:-0.55, vy:0, dead:0, t:0, sx:x*TILE}); }
 function hotcart(x) { enemies.push({type:'z', art:'cart', x:x*TILE, y:10*TILE-16, w:22, h:16, vx:-0.5, vy:0, dead:0, t:0, sx:x*TILE}); }
 function bat(x, y) { enemies.push({type:'b', x:x*TILE, y:y*TILE, w:14, h:9, vx:0, vy:0, dead:0, t:0, mode:0, sx:x*TILE, sy:y*TILE}); }
-function boss(x) { enemies.push({type:'boss', x:x*TILE, y:10*TILE-64, w:44, h:64, hp:15, maxhp:15, dead:0, t:0, hitFlash:0, windup:0, throwCd:120, recoil:0, greeted:0}); hasBoss = true; }
+function boss(x) { enemies.push({type:'boss', x:x*TILE, y:10*TILE-64, w:44, h:64, hp:15, maxhp:15, dead:0, t:0, hitFlash:0, windup:0, throwCd:60, recoil:0, greeted:0, postT:0}); hasBoss = true; }
 function tomb(x, v) { decor.push({t: v ? 'tomb2':'tomb', x:x*TILE, y:9*TILE}); }
 function tree(x) { decor.push({t:'tree', x:x*TILE, y:9*TILE-32}); }
 function bill(x, k) { decor.push({t:'bill'+k, x:x*TILE, y:26}); }
@@ -1086,7 +1096,7 @@ function buildLevel() {
   enemies.length = 0; candles.length = 0; decor.length = 0;
   checkpoints.length = 0; powerups.length = 0;
   seenTags = {}; quip = null;
-  bossGate = null; bossDefeated = false; hasBoss = false; bossShots.length = 0; bossTalk = null; bossSpeech = null;
+  bossGate = null; bossDefeated = false; hasBoss = false; bossShots.length = 0; bossTalk = null; bossSpeech = null; bossEngaged = false;
 
   // ============ ACT 1 · THE BROWNSTONE BLOCK — home turf, learn the ropes
   ground(0, 21);
@@ -1283,12 +1293,21 @@ const TRACKS = {
       77,__,79,__,81,__,84,__,  79,__,76,79,72,__,__,__],
     bass: [
       48,48,55,55, 57,57,53,53, 48,48,55,55, 53,53,55,55]
+  },
+  boss: {    // THE BOUNCER standoff — driving E-minor, all business
+    step: 0.15, hatMod: 2, leadVol: 0.032, leadDur: 0.13,
+    lead: [
+      64,__,64,__,67,__,64,63,  64,__,67,__,70,__,67,__,
+      64,__,64,__,67,__,70,71,  70,__,67,__,63,__,64,__],
+    bass: [
+      40,40,52,40, 40,40,52,40, 39,39,51,39, 40,40,47,40]
   }
 };
 const music = { timer:null, next:0, step:0, mode:'night' };
 function musicMode() {
   if (state === 'win' || state === 'photo') return 'win';
   if (state === 'play' && wolfT > 0) return 'wolf';
+  if (state === 'play' && bossEngaged) return 'boss';
   return 'night';
 }
 function startMusic() {
@@ -1385,8 +1404,10 @@ function stickReset() {
 }
 stick.addEventListener('pointerdown', e => {
   e.preventDefault();
-  if (stickId !== null) return;
+  // newest touch always takes over — if iOS ever eats a pointerup the
+  // stick can't wedge shut on a dead pointer id
   stickId = e.pointerId; stickOX = e.clientX; stickOY = e.clientY;
+  touch.axis = 0;
   try { stick.setPointerCapture(e.pointerId); } catch(err) {}
   stickShow(stickOX, stickOY);
 });
@@ -1400,6 +1421,19 @@ stick.addEventListener('pointermove', e => {
 });
 stick.addEventListener('pointerup', e => { if (e.pointerId === stickId) stickReset(); });
 stick.addEventListener('pointercancel', e => { if (e.pointerId === stickId) stickReset(); });
+// belt-and-braces: catch releases the stick element never hears about
+window.addEventListener('pointerup', e => { if (e.pointerId === stickId) stickReset(); });
+window.addEventListener('pointercancel', e => { if (e.pointerId === stickId) stickReset(); });
+// if the page loses focus mid-touch (call, notification, tab switch),
+// drop every held input so Zarna never runs off on her own
+function releaseAllInputs() {
+  stickReset();
+  touch.a = false; touch.b = false; touch.tapJump = false;
+  bA.classList.remove('pressed'); bB.classList.remove('pressed');
+}
+window.addEventListener('blur', releaseAllInputs);
+window.addEventListener('pagehide', releaseAllInputs);
+document.addEventListener('visibilitychange', () => { if (document.hidden) releaseAllInputs(); });
 
 const hasTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 function showControls(v) {
@@ -1412,7 +1446,7 @@ function showControls(v) {
 // game stays playable even if browser zoom displaces the buttons
 let tapJumpId = null;
 window.addEventListener('pointerdown', e => {
-  if (e.target === screen && state === 'play' && e.clientX > window.innerWidth * 0.52) {
+  if (e.target === screen && state === 'play' && e.clientX > layoutW() * 0.52) {
     tapJumpId = e.pointerId;
     touch.tapJump = true;
     input.jump = true;
@@ -1515,6 +1549,7 @@ function sayQuip(txt) { quip = { txt, t: 0 }; }
 let bossTalk = null;     // { seq:[{who,txt,dur}], i, t }
 let bossSpeech = null;   // { txt, t } — the bouncer's line, drawn over his head
 function startBossTalk() {
+  bossEngaged = true;                       // music drops into the standoff track
   bossTalk = { i: 0, t: 0, seq: [
     { who:'boss',  txt:'HEY! STOP!',            dur:70 },
     { who:'zarna', txt:'OH NO, THE BOUNCER!',   dur:80 },
@@ -1861,9 +1896,10 @@ function updateBoss(e) {
     e.greeted = 1; startBossTalk();
   }
   // hold his throws until the greeting exchange is over, so the beat lands
+  if (e.postT > 0) e.postT--;                     // arms stay unfolded a beat after the throw
   if (state === 'play' && !bossTalk && near && e.windup === 0) {
     if (e.throwCd > 0) e.throwCd--;
-    else { e.windup = 26; e.throwCd = 150 + Math.floor(Math.random() * 50); }   // telegraph, then throw
+    else { e.windup = 26; e.throwCd = 95 + Math.floor(Math.random() * 40); }   // telegraph, then throw
   }
   // contact costs a heart — but never while invincible, and it never kills him
   if (state === 'play' && player.inv <= 0 && wolfT <= 0 &&
@@ -1874,7 +1910,9 @@ function updateBoss(e) {
 }
 function throwBand(e) {
   const dir = (player.x < e.x) ? -1 : 1;
-  bossShots.push({ x: e.x + (dir < 0 ? 0 : e.w - 8), y: e.y + 14, vx: dir * 1.7, vy: -2.5, t: 0 });
+  e.postT = 14;                                    // hold the unfolded pose through the release
+  // the band leaves from his raised hand, up by his head
+  bossShots.push({ x: e.x + (dir < 0 ? -4 : e.w - 4), y: e.y - 2, vx: dir * 1.7, vy: -2.0, t: 0 });
   tone(320, 180, 0.09, 'square', 0.06); noise(0.04, 0.02);
 }
 function updateBossShots() {
@@ -1895,6 +1933,7 @@ function updateBossShots() {
 }
 function defeatBoss(e) {
   e.dead = 1; bossDefeated = true;
+  bossEngaged = false; bossTalk = null; bossSpeech = null;   // standoff over — happy music returns
   if (bossGate) for (let y = bossGate.y0; y <= bossGate.y1; y++)
     for (let x = bossGate.x0; x <= bossGate.x1; x++) set(x, y, '.');   // stage doors swing open
   score += 1000;
@@ -2272,11 +2311,13 @@ function drawEnemies() {
       const bw = sprBoss1.width * 2, bh = sprBoss1.height * 2;   // drawn big — he's a giant
       const bx = dx + Math.floor((e.w - bw) / 2) + kick;
       const by = dy + e.h - bh + (Math.sin(e.t*0.06) < -0.5 ? 1 : 0);
-      const spr = (e.windup > 0 && (e.windup & 2)) ? sprBoss2 : sprBoss1;
+      // arms unfold and stay unfolded through the windup + release — no flicker
+      const throwing = e.windup > 0 || e.postT > 0;
+      const spr = throwing ? sprBoss2 : sprBoss1;
       ctx.drawImage(spr, bx, by, bw, bh);
       const redAmt = (1 - e.hp/e.maxhp) * 0.55;    // reddens as he takes damage
-      if (redAmt > 0.01) { ctx.globalAlpha = redAmt; ctx.drawImage(sprBossRed, bx, by, bw, bh); ctx.globalAlpha = 1; }
-      if (e.hitFlash > 0 && (e.hitFlash & 1)) { ctx.globalAlpha = 0.5; ctx.drawImage(sprBossWhite, bx, by, bw, bh); ctx.globalAlpha = 1; }
+      if (redAmt > 0.01) { ctx.globalAlpha = redAmt; ctx.drawImage(throwing ? sprBoss2Red : sprBossRed, bx, by, bw, bh); ctx.globalAlpha = 1; }
+      if (e.hitFlash > 0 && (e.hitFlash & 1)) { ctx.globalAlpha = 0.5; ctx.drawImage(throwing ? sprBoss2White : sprBossWhite, bx, by, bw, bh); ctx.globalAlpha = 1; }
     }
   }
   // orange wristbands mid-flight
@@ -2707,6 +2748,8 @@ window.__dbg = {
   get bossDefeated() { return bossDefeated; },
   get bossShots() { return bossShots; },
   get bossTalk() { return bossTalk; },
+  get bossEngaged() { return bossEngaged; },
+  get musicMode() { return musicMode(); },
   killBoss() { const b = enemies.find(e => e.type === 'boss' && !e.dead); if (b) { b.hp = 0; defeatBoss(b); } },
   press: {
     primary() { input.any = true; },
