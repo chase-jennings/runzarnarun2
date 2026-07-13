@@ -2591,10 +2591,11 @@ function drawWin() {
   drawTextC(ctx, 'YOU MADE IT!', 10, '#ffd75e', 2);
   // Zarna reunited with her family
   const cx = Math.floor(VW / 2);
-  ctx.drawImage(sprPlayer.idle, cx - 26, 40);
-  drawFamily(cx - 2, 34, { flip: true, scale: 0.9 });
+  // reunion row sits high enough that Zarna's shoes clear the text below
+  ctx.drawImage(sprPlayer.idle, cx - 26, 32);
+  drawFamily(cx - 2, 26, { flip: true, scale: 0.9 });
   const hb = Math.sin(frame * 0.1) * 2;
-  ctx.drawImage(sprHeart, cx - 8, Math.floor(30 + hb));
+  ctx.drawImage(sprHeart, cx - 8, Math.floor(22 + hb));
   drawTextC(ctx, 'MADE IT TO THE MIC.', 68, '#f4f0f6');
   drawTextC(ctx, 'THE OPENER STILL RAN LONG.', 78, '#a8c4dc');
   drawTextC(ctx, 'FAMILY IN THE FRONT ROW.', 90, '#e0359a');
