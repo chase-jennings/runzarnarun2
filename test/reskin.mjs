@@ -319,6 +319,10 @@ const win = await page.evaluate(() => {
   return window.__dbg.state;
 });
 check('photo -> win/score', win === 'win', `state=${win}`);
+// run clock advanced during play and a best time was recorded on win
+const clock = await page.evaluate(() => ({ runFrames: window.__dbg.runFrames, bestTime: window.__dbg.bestTime }));
+check('run clock advanced during play', clock.runFrames > 0, `runFrames=${clock.runFrames}`);
+check('best time recorded on win', clock.bestTime > 0 && clock.bestTime === clock.runFrames, `bestTime=${clock.bestTime}`);
 await page.evaluate(() => window.__dbg.step(4));
 await page.screenshot({ path: path.join(SHOT, 'reskin-09-win.png') });
 

@@ -1481,8 +1481,16 @@ const titleImg = new Image();
 titleImg.onerror = () => { if (!/IMG_6009/.test(titleImg.src)) titleImg.src = 'IMG_6009.webp?v=1'; };
 titleImg.src = 'title.webp?v=1';
 let score = 0, souls = 0, hearts = 3;
-let best = 0;
+let runFrames = 0;     // fixed-timestep ticks spent in gameplay — the speedrun clock
+let best = 0, bestTime = 0;
 try { best = parseInt(localStorage.getItem('graverunner.best') || '0', 10) || 0; } catch(e) {}
+try { bestTime = parseInt(localStorage.getItem('graverunner.besttime') || '0', 10) || 0; } catch(e) {}
+// mm:ss.d for the speedrun clock (fixed-timestep ticks -> real seconds at 60fps)
+function fmtTime(f) {
+  const cs = Math.floor(f * 100 / 60);          // centiseconds
+  const m = Math.floor(cs / 6000), s = Math.floor((cs % 6000) / 100), d = Math.floor((cs % 100) / 10);
+  return m + ':' + String(s).padStart(2, '0') + '.' + d;
+}
 
 const player = {
   x:0, y:0, vx:0, vy:0, w:10, h:22,
@@ -1503,7 +1511,7 @@ let dbgPaused = false;   // test hook: when true, the rAF loop stops auto-steppi
 
 function resetRun() {
   buildLevel();
-  score = 0; souls = 0; hearts = 3;
+  score = 0; souls = 0; hearts = 3; runFrames = 0;
   wolfT = 0; crossT = 0; pendingWolf = false; player.h = 22;
   fireballs = []; fireCD = 0;
   tutT = 420;
@@ -2426,6 +2434,10 @@ function drawHUD() {
   drawText(ctx, 'X' + String(souls).padStart(2, '0'), 14, 16, '#e8e0d0');
   const st = 'SCORE ' + String(score).padStart(6, '0');
   drawText(ctx, st, VW - textW(st) - 5, 6, '#e8e0d0');
+  if (state === 'play' || state === 'dying') {   // live speedrun clock, under the score
+    const tm = 'TIME ' + fmtTime(runFrames);
+    drawText(ctx, tm, VW - textW(tm) - 5, 15, '#8fe3ff');
+  }
   let barY = 26;
   if (wolfT > 0) {
     drawText(ctx, 'AUNTIE', 5, barY, '#ffd75e');
@@ -2612,11 +2624,17 @@ function drawWin() {
   // the hi-res layer; the pixel layer carries only the text
   if (endCardImg.complete && endCardImg.naturalWidth > 0) ctx.clearRect(0, 0, VW, VH);
   else { ctx.fillStyle = '#0d1220'; ctx.fillRect(0, 0, VW, VH); }
-  drawTextCO(ctx, 'YOU MADE IT TO THE MIC!', Math.round(VH*0.07), '#ffd75e', VW >= 290 ? 3 : 2);
-  drawTextCO(ctx, 'THE SHOW STARTS ON TIME. THE CROWD GOES WILD!', Math.round(VH*0.07) + (VW >= 290 ? 20 : 15), '#f4f0f6');
-  drawTextCO(ctx, 'PINEAPPLES ' + souls + '   SCORE ' + score, VH - 54, '#eef4fa');
-  if (best > 0) drawTextCO(ctx, 'BEST SCORE: ' + best, VH - 44, '#ffd75e');
-  if ((frame >> 5) & 1) drawTextCO(ctx, hasTouch ? 'TAP TO PLAY AGAIN' : 'PRESS SPACE', VH - 26, '#eef4fa', 2);
+  // one centred stack near the middle: headline, then the stats right below it
+  const big = VW >= 290 ? 3 : 2;
+  let y = Math.round(VH * 0.26);
+  drawTextCO(ctx, 'YOU MADE IT TO THE MIC!', y, '#ffd75e', big);           y += big*5 + 7;
+  drawTextCO(ctx, 'THE SHOW STARTS ON TIME. THE CROWD GOES WILD!', y, '#f4f0f6'); y += 13;
+  drawTextCO(ctx, 'TIME ' + fmtTime(runFrames), y, '#8fe3ff');             y += 9;
+  drawTextCO(ctx, 'PINEAPPLES ' + souls + '   SCORE ' + score, y, '#eef4fa'); y += 9;
+  if (bestTime > 0) { drawTextCO(ctx, 'BEST TIME ' + fmtTime(bestTime), y, '#ffd75e'); y += 9; }
+  if (best > 0) { drawTextCO(ctx, 'BEST SCORE: ' + best, y, '#ffd75e'); y += 9; }
+  y += 5;
+  if ((frame >> 5) & 1) drawTextCO(ctx, hasTouch ? 'TAP TO PLAY AGAIN' : 'PRESS SPACE', y, '#eef4fa', 2);
 }
 
 //------------------------------------------------ main loop
@@ -2649,6 +2667,7 @@ function tick() {
       showControls(true);
     }
   } else if (state === 'play') {
+    runFrames++;                                  // the run clock ticks only during play
     if (tutT > 0) tutT -= (input.axis ? 5 : 1);   // hint fades fast once they move
     updatePlayer();
     updateFireballs();
@@ -2695,6 +2714,10 @@ function tick() {
     if (stateT > 420 || (stateT > 30 && input.any) || (!imgReady && stateT > 60)) {
       input.any = false;
       state = 'win'; stateT = 0;
+      if (runFrames > 0 && (bestTime === 0 || runFrames < bestTime)) {   // new fastest run
+        bestTime = runFrames;
+        try { localStorage.setItem('graverunner.besttime', String(bestTime)); } catch(e) {}
+      }
     }
   } else if (state === 'win') {
     updateFX();
@@ -2806,6 +2829,7 @@ window.__dbg = {
   get musicMode() { return musicMode(); },
   get view() { return { VW, VH, scale }; },
   get camY() { return camY; },
+  get runFrames() { return runFrames; }, get bestTime() { return bestTime; },
   killBoss() { const b = enemies.find(e => e.type === 'boss' && !e.dead); if (b) { b.hp = 0; defeatBoss(b); } },
   press: {
     primary() { input.any = true; },
