@@ -1471,6 +1471,9 @@ let stateT = 0;
 // Zarna on stage, crowd roaring — shown after reaching the show
 const endingImg = new Image();
 endingImg.src = 'ending.webp?v=1';
+// full-bleed backdrop for the final YOU MADE IT screen (dark overlay baked in)
+const endCardImg = new Image();
+endCardImg.src = 'end-card.webp?v=1';
 // illustrated title card (?v= busts stale phone caches when the art changes).
 // Prefer the new wide, margin-composed art; fall back to the original upload
 // until title.webp is added, so the responsive layout works either way.
@@ -2605,22 +2608,15 @@ function drawPhoto() {
 }
 
 function drawWin() {
-  ctx.fillStyle = 'rgba(10,30,52,0.72)';
-  ctx.fillRect(0, 0, VW, VH);
-  drawTextC(ctx, 'YOU MADE IT!', 10, '#ffd75e', 2);
-  // Zarna reunited with her family
-  const cx = Math.floor(VW / 2);
-  // reunion row sits high enough that Zarna's shoes clear the text below
-  ctx.drawImage(sprPlayer.idle, cx - 26, 32);
-  drawFamily(cx - 2, 26, { flip: true, scale: 0.9 });
-  const hb = Math.sin(frame * 0.1) * 2;
-  ctx.drawImage(sprHeart, cx - 8, Math.floor(22 + hb));
-  drawTextC(ctx, 'MADE IT TO THE MIC.', 68, '#f4f0f6');
-  drawTextC(ctx, 'THE OPENER STILL RAN LONG.', 78, '#a8c4dc');
-  drawTextC(ctx, 'FAMILY IN THE FRONT ROW.', 90, '#e0359a');
-  drawTextC(ctx, 'PINEAPPLES ' + souls + '   SCORE ' + score, 102, '#eef4fa');
-  if (best > 0) drawTextC(ctx, 'BEST SCORE: ' + best, 112, '#ffd75e');
-  if ((frame >> 5) & 1) drawTextC(ctx, hasTouch ? 'TAP TO PLAY AGAIN' : 'PRESS SPACE', 124, '#eef4fa', 2);
+  // the end-card art (Zarna on stage, crowd roaring) fills the screen from
+  // the hi-res layer; the pixel layer carries only the text
+  if (endCardImg.complete && endCardImg.naturalWidth > 0) ctx.clearRect(0, 0, VW, VH);
+  else { ctx.fillStyle = '#0d1220'; ctx.fillRect(0, 0, VW, VH); }
+  drawTextCO(ctx, 'YOU MADE IT TO THE MIC!', Math.round(VH*0.07), '#ffd75e', VW >= 290 ? 3 : 2);
+  drawTextCO(ctx, 'THE SHOW STARTS ON TIME. THE CROWD GOES WILD!', Math.round(VH*0.07) + (VW >= 290 ? 20 : 15), '#f4f0f6');
+  drawTextCO(ctx, 'PINEAPPLES ' + souls + '   SCORE ' + score, VH - 54, '#eef4fa');
+  if (best > 0) drawTextCO(ctx, 'BEST SCORE: ' + best, VH - 44, '#ffd75e');
+  if ((frame >> 5) & 1) drawTextCO(ctx, hasTouch ? 'TAP TO PLAY AGAIN' : 'PRESS SPACE', VH - 26, '#eef4fa', 2);
 }
 
 //------------------------------------------------ main loop
@@ -2722,6 +2718,8 @@ function render() {
     drawIntro();
   } else if (state === 'photo') {
     drawPhoto();
+  } else if (state === 'win') {
+    drawWin();          // end-card art, not the game world
   } else {
     drawBackdrop();
     drawTiles();
@@ -2770,6 +2768,11 @@ function drawHiResArt() {
     sctx.fillStyle = g; sctx.fillRect(offX, offY + VH*scale - bB, VW*scale, bB);
   } else if (state === 'photo' && endingImg.complete && endingImg.naturalWidth > 0) {
     blitArt(endingImg, photoRect(), Math.min(1, stateT / 40));
+  } else if (state === 'win' && endCardImg.complete && endCardImg.naturalWidth > 0) {
+    // cover-fit: the card fills the whole view (dark overlay is baked in)
+    const s = Math.max(VW / endCardImg.naturalWidth, VH / endCardImg.naturalHeight);
+    const w = Math.ceil(endCardImg.naturalWidth * s), h = Math.ceil(endCardImg.naturalHeight * s);
+    blitArt(endCardImg, { x: Math.floor((VW - w) / 2), y: Math.floor((VH - h) / 2), w, h }, 1);
   }
   sctx.restore();
   sctx.imageSmoothingEnabled = false;
