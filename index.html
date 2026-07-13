@@ -109,7 +109,8 @@
 
 //------------------------------------------------ constants
 const TILE = 16;
-const BASE_VW = 192, BASE_VH = 108;    // minimum view (12x~7 tiles) — zoomed in so Zarna reads BIG
+const BASE_VW = 192, BASE_VH = 192;    // minimum view — full 12-tile level height, so the
+                                       // camera never scrolls vertically and the ground always shows
 let VW = BASE_VW, VH = BASE_VH;        // actual view expands to fill the device edge-to-edge
 const LEVEL_H = 192;                   // level is 12 tiles tall; camera follows vertically
 const GRAV = 0.28, MAXFALL = 5.0;
@@ -2476,13 +2477,6 @@ function drawTutorial() {
 // garble. Instead the photo states punch a transparent hole in the pixel
 // layer and the blit stage draws the artwork straight onto the full-
 // resolution screen canvas with smooth scaling (drawHiResArt below).
-function titleCoverRect() {
-  // cover/fill layer — max scale, fills the view; used behind the fit layer so
-  // wide screens have a colour-correct zoomed backdrop instead of empty bars
-  const s = Math.max(VW / titleImg.naturalWidth, VH / titleImg.naturalHeight);
-  const w = Math.ceil(titleImg.naturalWidth * s), h = Math.ceil(titleImg.naturalHeight * s);
-  return { x: Math.floor((VW - w) / 2), y: -Math.floor((h - VH) * 0.35), w, h };
-}
 function titleFitRect() {
   // fit-to-HEIGHT — always shows the art's full height, so its sky band (top)
   // and pavement strip (bottom) are present at fixed fractions of the view;
@@ -2764,13 +2758,9 @@ function drawHiResArt() {
   sctx.beginPath(); sctx.rect(offX, offY, VW*scale, VH*scale); sctx.clip();
   sctx.imageSmoothingEnabled = true; sctx.imageSmoothingQuality = 'high';
   if (state === 'title' && titleImg.complete && titleImg.naturalWidth > 0) {
-    // 1) zoomed cover layer fills the side gaps with a colour-correct backdrop
-    blitArt(titleImg, titleCoverRect(), 1);
-    sctx.fillStyle = 'rgba(8,20,40,0.34)';                 // dim the backdrop so the framed scene pops
-    sctx.fillRect(offX, offY, VW*scale, VH*scale);
-    // 2) crisp fit-to-height scene, centred, full margins intact
+    // crisp fit-to-height scene, centred on black, full margins intact
     blitArt(titleImg, titleFitRect(), 1);
-    // 3) soft scrims top & bottom so the title / prompt always read
+    // soft scrims top & bottom so the title / prompt always read
     const tB = Math.round(VH*0.30)*scale, bB = Math.round(VH*0.24)*scale;
     let g = sctx.createLinearGradient(0, offY, 0, offY + tB);
     g.addColorStop(0, 'rgba(6,16,34,0.62)'); g.addColorStop(1, 'rgba(6,16,34,0)');
@@ -2811,6 +2801,8 @@ window.__dbg = {
   get bossTalk() { return bossTalk; },
   get bossEngaged() { return bossEngaged; },
   get musicMode() { return musicMode(); },
+  get view() { return { VW, VH, scale }; },
+  get camY() { return camY; },
   killBoss() { const b = enemies.find(e => e.type === 'boss' && !e.dead); if (b) { b.hp = 0; defeatBoss(b); } },
   press: {
     primary() { input.any = true; },

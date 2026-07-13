@@ -51,6 +51,10 @@ let { context, page } = await open('portrait', { ...iPhone, hasTouch: true });
 
 await page.screenshot({ path: path.join(SHOT, 'reskin-01-title.png') });
 check('starts on title', await page.evaluate(() => window.__dbg.state === 'title'));
+{
+  const v = await page.evaluate(() => window.__dbg.view);
+  check('portrait view shows full level height', v.VH === 192, `VH=${v.VH}`);
+}
 check('hearts start at 3', await page.evaluate(() => window.__dbg.hearts === 3),
       `hearts=${await page.evaluate(() => window.__dbg.hearts)}`);
 
@@ -350,6 +354,15 @@ await context.close();
   await lp.evaluate(() => window.__dbg.step(3));
   const tut = await lp.evaluate(() => ({ tutT: window.__dbg.tutT, state: window.__dbg.state }));
   check('landscape reaches play with tutorial hint', tut.state === 'play' && tut.tutT > 0, `tutT=${tut.tutT}`);
+  // full level height visible + no vertical camera even on a high platform
+  const cam = await lp.evaluate(() => {
+    const h = window.__dbg.hero;
+    h.x = 40*16; h.y = 3*16; h.vy = 0; h.inv = 99999;   // park her high up
+    window.__dbg.step(60);
+    return { VH: window.__dbg.view.VH, camY: window.__dbg.camY };
+  });
+  check('landscape shows full level height', cam.VH === 192, `VH=${cam.VH}`);
+  check('camera never scrolls vertically', cam.camY === 0, `camY=${cam.camY}`);
   await lp.screenshot({ path: path.join(SHOT, 'reskin-11-play-landscape.png') });
   await c.close();
 }
